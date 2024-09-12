@@ -1,0 +1,33 @@
+.custom-input {
+	background-color: #f5f5f5;
+	border: 1px solid #d1d1d1;
+	padding: 8px;
+	border-radius: 4px;
+	width: 100%;
+	max-width: 250px;
+	font-size: 16px;
+}
+
+.custom-calendar {
+	background-color: #ffffff;
+	border: 1px solid #d1d1d1;
+	border-radius: 8px;
+	box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+	padding: 10px;
+}
+
+.custom-popper {
+	z-index: 10;
+	box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.react-datepicker__day--selected {
+	background-color: #3182ce;
+	color: white;
+}
+
+.react-datepicker__day--today {
+	border: 1px solid #3182ce;
+	color: #3182ce;
+	font-weight: bold;
+}
