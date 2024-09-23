@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import DynamicTable from './dynamic.table';
 import { Icon } from '@chakra-ui/react';
 import { FaWifi } from 'react-icons/fa';
+import { useDataContext } from '../../context/data.context';
 
-const getStatusIcon = (status) => {
+const getStatusIcon = (status: string) => {
 	const statusColors = {
-		Activated: 'light-green',
+		Activated: 'green',
 		Active: 'green',
 		Suspended: 'orange',
 		Deployed: 'blue',
 		Testing: 'red',
+		Deactivated: 'red',
 	};
 
 	return (
@@ -27,88 +29,30 @@ const getStatusIcon = (status) => {
 
 const ParentComponent = () => {
 	const columnsConfig = [
-		{ label: 'IMEI', accessor: 'imei' },
+		{ label: 'Comm ID', accessor: 'commId' },
 		{ label: 'Device Name', accessor: 'deviceName' },
 		{ label: 'Last Transmit (Date)', accessor: 'lastTransmitDate' },
 		{ label: 'Last Transmit (Ago)', accessor: 'lastTransmitAgo' },
 		{ label: 'Status', accessor: 'status' },
 	];
 
-	const data = [
-		{
-			id: 1,
-			imei: 123456789012345,
-			deviceName: 'Ocean Drifter 1',
-			lastTransmitDate: '2024-09-10 14:22:35',
-			lastTransmitAgo: '2 days ago',
-			status: getStatusIcon('Active'),
-		},
-		{
-			id: 2,
-			imei: 987654321098765,
-			deviceName: 'Ocean Drifter 2',
-			lastTransmitDate: '2024-09-08 08:15:12',
-			lastTransmitAgo: '4 days ago',
-			status: getStatusIcon('Suspended'),
-		},
-		{
-			id: 3,
-			imei: 135791357913579,
-			deviceName: 'Ocean Drifter 3',
-			lastTransmitDate: '2024-09-05 22:45:00',
-			lastTransmitAgo: '1 week ago',
-			status: getStatusIcon('Deployed'),
-		},
-		{
-			id: 4,
-			imei: 246824682468246,
-			deviceName: 'Ocean Drifter 4',
-			lastTransmitDate: '2024-09-03 09:32:21',
-			lastTransmitAgo: '1 month ago',
-			status: getStatusIcon('Testing'),
-		},
-		{
-			id: 5,
-			imei: 246824682468247,
-			deviceName: 'Ocean Drifter 5',
-			lastTransmitDate: '2024-09-03 09:32:21',
-			lastTransmitAgo: '2 months ago',
-			status: getStatusIcon('Testing'),
-		},
-		{
-			id: 6,
-			imei: 246824682468248,
-			deviceName: 'Ocean Drifter 6',
-			lastTransmitDate: '2024-09-03 09:32:21',
-			lastTransmitAgo: '3 months ago',
-			status: getStatusIcon('Testing'),
-		},
-		{
-			id: 7,
-			imei: 246824682468249,
-			deviceName: 'Ocean Drifter 6',
-			lastTransmitDate: '2024-09-03 09:32:21',
-			lastTransmitAgo: '4 months ago',
-			status: getStatusIcon('Testing'),
-		},
-		{
-			id: 8,
-			imei: 246824682468250,
-			deviceName: 'Ocean Drifter 7',
-			lastTransmitDate: '2024-09-03 09:32:21',
-			lastTransmitAgo: '5 months ago',
-			status: getStatusIcon('Testing'),
-		},
-	];
+	const { devices, setSelectedDevices } = useDataContext();
 
 	const [selectedColumns, setSelectedColumns] = useState(
 		columnsConfig.map((col) => col.accessor)
 	);
-	const [selectedRows, setSelectedRows] = useState([]);
+	const [selectedRows, setSelectedRows] = useState<string[]>([]);
 	const [searchFilter, setSearchFilter] = useState('');
 	const [sortOrder, setSortOrder] = useState({ column: '', ascending: true });
 
-	const filteredData = data
+	useEffect(() => {
+		setSelectedDevices(selectedRows);
+	}, [selectedRows]);
+
+	const filteredData = devices
+		.map((device) => {
+			return { ...device, status: getStatusIcon(device.status) };
+		})
 		.filter((row) =>
 			selectedColumns.some((col) =>
 				String(row[col]).toLowerCase().includes(searchFilter.toLowerCase())
@@ -116,29 +60,43 @@ const ParentComponent = () => {
 		)
 		.sort((a, b) => {
 			if (!sortOrder.column) return 0;
+
 			const isAsc = sortOrder.ascending ? 1 : -1;
-			if (typeof a[sortOrder.column] === 'string') {
-				return isAsc * a[sortOrder.column].localeCompare(b[sortOrder.column]);
+
+			let usingColumn = sortOrder.column;
+
+			if (sortOrder.column == 'lastTransmitAgo') {
+				usingColumn = 'lastTransmitDate';
 			}
-			return isAsc * (a[sortOrder.column] - b[sortOrder.column]);
+
+			if (typeof a[usingColumn] === 'string') {
+				return isAsc * a[usingColumn].localeCompare(b[usingColumn]);
+			}
+
+			return isAsc * (a[usingColumn] - b[usingColumn]);
 		});
 
-	const handleSelectRow = (id) => {
-		setSelectedRows((prev) =>
-			prev.includes(id) && prev.length == 1 ? [] : [id]
-		);
+	const handleSelectRow = async (deviceId) => {
+		setSelectedRows((prev) => {
+			return prev == deviceId && prev.length == 1 ? [] : [deviceId];
+		});
 	};
 
-	const handleCheckboxClick = (e, id) => {
+	const handleCheckboxClick = async (e, deviceId) => {
 		e.stopPropagation();
+
 		setSelectedRows((prev) =>
-			prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
+			prev.includes(deviceId)
+				? prev.filter((rowId) => rowId !== deviceId)
+				: [...prev, deviceId]
 		);
 	};
 
 	const handleSelectAllRows = () => {
 		setSelectedRows((prev) =>
-			prev.length === data.length ? [] : data.map((row) => row.id)
+			prev.length === devices.length
+				? []
+				: devices.map((device) => device.commId + '')
 		);
 	};
 

@@ -1,47 +1,184 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, {
+	createContext,
+	useState,
+	useContext,
+	useEffect,
+	useRef,
+} from 'react';
+import { useAuthContext } from './auth.context';
+import { fetchDevices } from '../api/devices.api';
+import { fetchSensors } from '../api/sensors.api';
 
-const DataContext = createContext({});
+export interface ITimeRange {
+	startDate: Date | null;
+	endDate: Date | null;
+}
+
+export interface IDevice {
+	id: string;
+	deviceId: string | number;
+	deviceTypeId: number;
+	commId: string;
+	deviceName: string;
+	lastTransmitDate: string;
+	lastTransmitAgo: string;
+	status: string;
+	deployed: boolean;
+	active: boolean;
+}
+
+export interface ISensors {
+	deviceTypeId: number;
+	sensors: string[];
+}
+
+interface ITransmission {
+	deviceDateTime: Date;
+	[key: string]: number | Date;
+}
+
+interface IDeviceData {
+	deviceId: number;
+	deviceName: string;
+	deviceTypeId: number;
+	deviceDataOverTime: ITransmission[];
+}
+
+interface IRawDeviceData {
+	DataId: number;
+	CommId: string | number;
+	DeviceName: string;
+	DeviceDateTime: Date | string;
+	[key: string]: string | number | Date | boolean;
+}
+
+interface IOrganization {
+	orgId: number;
+	organizationName: string;
+}
+
+interface IDataContext {
+	organization?: IOrganization;
+	setOrganization?: React.Dispatch<React.SetStateAction<IOrganization>>;
+	timeRange?: ITimeRange;
+	setTimeRange?: React.Dispatch<React.SetStateAction<ITimeRange>>;
+	devices?: IDevice[];
+	setDevices?: React.Dispatch<React.SetStateAction<IDevice[]>>;
+	selectedDevices?: string[];
+	setSelectedDevices?: React.Dispatch<React.SetStateAction<string[]>>;
+	sensorSets?: ISensors[];
+	setSensorSets?: React.Dispatch<React.SetStateAction<ISensors[]>>;
+	selectedSensors?: string[];
+	setSelectedSensors?: React.Dispatch<React.SetStateAction<string[]>>;
+	deviceDataSets?: IDeviceData[];
+	setDeviceDataSets?: React.Dispatch<React.SetStateAction<IDeviceData[]>>;
+	rawDeviceData?: IRawDeviceData[];
+	setRawDeviceData?: React.Dispatch<React.SetStateAction<IRawDeviceData[]>>;
+}
+
+const DataContext = createContext<IDataContext>({});
+
+const currentDate = new Date();
 
 export const DataProvider = ({ children }) => {
-	const [timeRange, setTimeRange] = useState({
-		startDate: '2023-01-01T00:00:00',
-		endDate: '2023-01-02T00:00:00',
+	const { jwt, orgId } = useAuthContext(); // TODO: orgId
+
+	const [timeRange, setTimeRange] = useState<ITimeRange>({
+		startDate: new Date(currentDate.getTime() - 3600000 * 24 * 30.5),
+		endDate: currentDate,
 	});
 
-	const [devices, setDevices] = useState([
-		{
-			deviceId: 1,
-			deviceName: 'Device A',
-			sensorData: [10, 20, 30, 40, 50],
-			timestamps: [
-				'2023-01-01T10:00:00',
-				'2023-01-01T11:00:00',
-				'2023-01-01T12:00:00',
-				'2023-01-01T13:00:00',
-				'2023-01-01T14:00:00',
-			],
-			isSelected: true, // Boolean for selection state
-		},
-		{
-			deviceId: 2,
-			deviceName: 'Device B',
-			sensorData: [15, 25, 35, 45, 55],
-			timestamps: [
-				'2023-01-01T10:00:00',
-				'2023-01-01T11:00:00',
-				'2023-01-01T12:00:00',
-				'2023-01-01T13:00:00',
-				'2023-01-01T14:00:00',
-			],
-			isSelected: false, // Boolean for selection state
-		},
-	]);
+	const [devices, setDevices] = useState<IDevice[]>([]);
 
-	// State for storing the sensor sets
-	const [sensorSets, setSensorSets] = useState([
-		{ sensorId: 1, sensorName: 'Temperature' },
-		{ sensorId: 2, sensorName: 'Humidity' },
-	]);
+	const [selectedDevices, setSelectedDevices] = useState<string[]>([]);
+
+	const [sensorSets, setSensorSets] = useState([]);
+
+	const [selectedSensors, setSelectedSensors] = useState([]);
+
+	const sensorsCacheRef = useRef({});
+
+	const [deviceDataSets, setDeviceDataSets] = useState<IDeviceData[]>([]);
+
+	const [rawDeviceData, setRawDeviceData] = useState<IRawDeviceData[]>(
+		Array.from({ length: 100 }).map((_element, index) => {
+			return {
+				DataId: index,
+				CommId: Array.from({ length: 15 })
+					.map((_element) => {
+						return Math.floor(Math.random() * 9) + 1;
+					})
+					.join(''),
+				DeviceName: `Device ${index + 1}`,
+				DeviceDateTime: new Date().toISOString(),
+				Sensor1: Math.floor(Math.random() * 1000),
+				Sensor2: Math.floor(Math.random() * 1000),
+				Sensor3: Math.floor(Math.random() * 1000),
+				Sensor4: Math.floor(Math.random() * 1000),
+				Sensor5: Math.floor(Math.random() * 1000),
+				Sensor6: Math.floor(Math.random() * 1000),
+				Sensor7: Math.floor(Math.random() * 1000),
+				Sensor8: Math.floor(Math.random() * 1000),
+				Sensor9: Math.floor(Math.random() * 1000),
+			};
+		})
+	);
+
+	useEffect(() => {
+		const fetchDeviceData = async () => {
+			const fetchedDevices = await fetchDevices({ jwt, orgId });
+
+			setDevices(fetchedDevices);
+		};
+
+		fetchDeviceData();
+	}, [jwt, orgId]);
+
+	useEffect(() => {
+		const updateSensorSets = async () => {
+			const selectedDevicesDetails = devices.filter((device) =>
+				selectedDevices.includes(device.commId)
+			);
+
+			const deviceTypeIdsSet = new Set(
+				selectedDevicesDetails.map((device) => device.deviceTypeId)
+			);
+
+			const deviceTypeIds = Array.from(deviceTypeIdsSet);
+
+			const deviceTypeIdsToFetch = deviceTypeIds.filter(
+				(deviceTypeId) => !(deviceTypeId in sensorsCacheRef.current)
+			);
+
+			if (deviceTypeIdsToFetch.length > 0) {
+				await Promise.all(
+					deviceTypeIdsToFetch.map(async (deviceTypeId) => {
+						const deviceId = devices.find((device) => {
+							device.deviceTypeId == deviceTypeId;
+						});
+						const sensors = await fetchSensors({ jwt, deviceId }); // TODO: Change To deviceTypeId
+						sensorsCacheRef.current[deviceTypeId] = sensors;
+					})
+				);
+			}
+
+			const updatedSensorSets = deviceTypeIds.map((deviceTypeId) => ({
+				deviceTypeId,
+				sensors: sensorsCacheRef.current[deviceTypeId],
+			}));
+
+			setSensorSets(updatedSensorSets);
+		};
+
+		updateSensorSets();
+	}, [selectedDevices]);
+
+	useEffect(() => {
+		const allSensors = sensorSets.flatMap((sensorSet) => sensorSet.sensors);
+		setSelectedSensors((prevSelectedSensors) =>
+			prevSelectedSensors.filter((sensor) => allSensors.includes(sensor))
+		);
+	}, [sensorSets]);
 
 	return (
 		<DataContext.Provider
@@ -50,8 +187,16 @@ export const DataProvider = ({ children }) => {
 				setTimeRange,
 				devices,
 				setDevices,
+				selectedDevices,
+				setSelectedDevices,
 				sensorSets,
 				setSensorSets,
+				selectedSensors,
+				setSelectedSensors,
+				deviceDataSets,
+				setDeviceDataSets,
+				rawDeviceData,
+				setRawDeviceData,
 			}}
 		>
 			{children}

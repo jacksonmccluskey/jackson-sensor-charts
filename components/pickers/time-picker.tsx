@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
 	Box,
 	Radio,
@@ -11,20 +11,65 @@ import {
 } from '@chakra-ui/react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { useDataContext } from '../../context/data.context';
+
+type TimeSelectionMode = 'time-span' | 'date-range';
+type TimeUnit = 'Hours' | 'Days' | 'Months' | 'Years';
+type CoordinateFormat = 'D' | 'DM' | 'DMS';
+
+const getTimeAgo = (timeUnit: TimeUnit, mostRecentValue?: number) => {
+	switch (timeUnit) {
+		case 'Hours': {
+			return mostRecentValue ? mostRecentValue * 3600000 : 0;
+		}
+		case 'Days': {
+			return mostRecentValue ? mostRecentValue * 3600000 * 24 : 0;
+		}
+		case 'Months': {
+			return mostRecentValue ? mostRecentValue * 3600000 * 24 * 30.5 : 0;
+		}
+		case 'Years': {
+			return mostRecentValue ? mostRecentValue * 3600000 * 24 * 365.25 : 0;
+		}
+	}
+};
 
 const TimePicker = () => {
-	type TimeSelectionMode = 'time-span' | 'date-range';
-	type TimeUnit = 'Hours' | 'Days' | 'Months' | 'Years';
-	type CoordinateFormat = 'D' | 'DM' | 'DMS';
+	const { timeRange, setTimeRange } = useDataContext();
 
 	const [timeSelectionMode, setTimeSelectionMode] =
 		useState<TimeSelectionMode>('time-span');
-	const [mostRecentValue, setMostRecentValue] = useState(24);
+	const [mostRecentValue, setMostRecentValue] = useState<number | undefined>(
+		30
+	);
 	const [timeUnit, setTimeUnit] = useState<TimeUnit>('Days');
-	const [fromDate, setFromDate] = useState(new Date());
-	const [toDate, setToDate] = useState(new Date());
+	const [fromDate, setFromDate] = useState<Date | null>(timeRange.startDate);
+	const [toDate, setToDate] = useState<Date | null>(timeRange.endDate);
 	const [coordinateFormat, setCoordinateFormat] =
 		useState<CoordinateFormat>('D');
+
+	useEffect(() => {}, [timeRange.startDate, timeRange.endDate]);
+
+	useEffect(() => {
+		if (timeSelectionMode == 'time-span') {
+			const currentDate = new Date();
+			const timeAgo = getTimeAgo(timeUnit, mostRecentValue);
+			const startDateMS = currentDate.getTime() - timeAgo;
+			const newTimeRange = {
+				startDate: new Date(startDateMS),
+				endDate: currentDate,
+			};
+			setTimeRange(newTimeRange);
+			setFromDate(newTimeRange.startDate);
+			setToDate(newTimeRange.endDate);
+		}
+	}, [timeSelectionMode, mostRecentValue, timeUnit]);
+
+	useEffect(() => {
+		if (timeSelectionMode == 'date-range') {
+			setTimeRange({ startDate: fromDate, endDate: toDate });
+		}
+	}, [timeSelectionMode, fromDate, toDate]);
 
 	const handleMostRecentChange = (e: any) =>
 		setMostRecentValue(
@@ -37,9 +82,6 @@ const TimePicker = () => {
 		<Box borderRadius='md' w='100%'>
 			<Flex>
 				<Flex flexDirection='column'>
-					<Text fontSize='lg' color='brand.black' minWidth='200px'>
-						Step 1: Enter Time Range
-					</Text>
 					<RadioGroup
 						onChange={(value: TimeSelectionMode) => setTimeSelectionMode(value)}
 						value={timeSelectionMode}
@@ -82,7 +124,7 @@ const TimePicker = () => {
 					</Text>
 					<Flex flexDirection='row' justifyContent='flex-start' marginTop='8px'>
 						<Input
-							value={mostRecentValue}
+							value={mostRecentValue ?? ''}
 							onChange={handleMostRecentChange}
 							width='64px'
 							color='brand.black'

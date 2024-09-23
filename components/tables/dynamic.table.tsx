@@ -1,7 +1,6 @@
-'use client';
-
 import React from 'react';
 import {
+	Flex,
 	Table,
 	Thead,
 	Tbody,
@@ -9,52 +8,59 @@ import {
 	Th,
 	Td,
 	Checkbox,
-	Box,
 } from '@chakra-ui/react';
-import { ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons';
+import { ChevronUpIcon, ChevronDownIcon } from '@chakra-ui/icons';
 
 const DynamicTable = ({
 	columnsConfig,
 	data,
-	selectedRows,
-	onSelectRow,
-	onSelectAllRows,
-	sortOrder,
-	onSort,
-	handleCheckboxClick,
+	selectedRows = [],
+	onSelectRow = null,
+	onSelectAllRows = null,
+	sortOrder = null,
+	onSort = null,
+	handleCheckboxClick = null,
 	styles = {},
 }) => {
 	const handleRowClick = (id) => {
-		onSelectRow(id);
+		if (onSelectRow) onSelectRow(id);
 	};
 
+	const allRowsSelected = data.every((row) => selectedRows.includes(row.id));
+	const someRowsSelected = data.some((row) => selectedRows.includes(row.id));
+
 	return (
-		<Box
-			overflowY='auto'
-			overflowX='auto'
+		<Flex
 			width='100%'
 			height='100%'
+			flexDirection='column'
+			overflowX='auto'
 			{...styles}
 		>
 			<Table size='sm' width='100%'>
-				<Thead>
+				<Thead position='sticky' top={0} zIndex='docked' bg='white'>
 					<Tr>
-						<Th>
-							<Checkbox
-								isChecked={selectedRows.length === data.length}
-								onChange={onSelectAllRows}
-								borderColor='black'
-							/>
-						</Th>
+						{onSelectAllRows && (
+							<Th>
+								<Checkbox
+									isChecked={allRowsSelected}
+									isIndeterminate={!allRowsSelected && someRowsSelected}
+									onChange={onSelectAllRows}
+									borderColor='black'
+								/>
+							</Th>
+						)}
 						{columnsConfig.map((col) => (
 							<Th
 								key={col.accessor}
-								onClick={() => onSort(col.accessor)}
+								onClick={() => (onSort ? onSort(col.accessor) : null)}
 								cursor='pointer'
 								whiteSpace='nowrap'
+								color='brand.black'
 							>
 								{col.label}
-								{sortOrder.column === col.accessor &&
+								{sortOrder &&
+									sortOrder.column === col.accessor &&
 									(sortOrder.ascending ? (
 										<ChevronUpIcon ml={2} />
 									) : (
@@ -64,29 +70,32 @@ const DynamicTable = ({
 						))}
 					</Tr>
 				</Thead>
-				<Tbody>
+				<Tbody overflowY='auto'>
 					{data.map((row) => (
 						<Tr
 							key={row.id}
 							cursor='pointer'
-							maxHeight='32px'
-							overflow='hidden'
 							bg={selectedRows.includes(row.id) ? 'brand.base' : 'transparent'}
+							onClick={() => handleRowClick(row.id)}
 						>
-							<Td onClick={(e) => handleCheckboxClick(e, row.id)}>
-								<Checkbox
-									isChecked={selectedRows.includes(row.id)}
-									onChange={(e) => handleCheckboxClick(e, row.id)}
-									borderColor='black'
-								/>
-							</Td>
+							{handleCheckboxClick && selectedRows && (
+								<Td onClick={(e) => e.stopPropagation()}>
+									<Checkbox
+										isChecked={selectedRows.includes(row.id)}
+										onChange={(e) => {
+											e.stopPropagation();
+											handleCheckboxClick(e, row.id);
+										}}
+										borderColor='black'
+									/>
+								</Td>
+							)}
 							{columnsConfig.map((col) => (
 								<Td
 									key={col.accessor}
 									isTruncated
 									whiteSpace='nowrap'
-									color='black'
-									onClick={() => handleRowClick(row.id)}
+									color='brand.black'
 								>
 									{row[col.accessor]}
 								</Td>
@@ -95,7 +104,7 @@ const DynamicTable = ({
 					))}
 				</Tbody>
 			</Table>
-		</Box>
+		</Flex>
 	);
 };
 
