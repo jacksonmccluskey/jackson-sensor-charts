@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useEffect, useState, MutableRefObject } from 'react';
-import mockData from './mock-data';
+import mockData from '../../mock/mock-data';
 
 // const Globe = dynamic(() => import('react-globe.gl'), { ssr: false });
 
