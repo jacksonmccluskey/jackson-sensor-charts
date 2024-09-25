@@ -8,3 +8,4 @@ docker-compose.yml
 nginx
 nginx/*
 nginx.conf
+.dockerignore
