@@ -71,9 +71,9 @@ const DynamicTable = ({
 					</Tr>
 				</Thead>
 				<Tbody overflowY='auto'>
-					{data.map((row) => (
+					{data.map((row, index) => (
 						<Tr
-							key={row.id}
+							key={row.id + index}
 							cursor='pointer'
 							bg={selectedRows.includes(row.id) ? 'brand.base' : 'transparent'}
 							onClick={() => handleRowClick(row.id)}

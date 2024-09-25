@@ -45,41 +45,47 @@ export const fetchDevices = async ({
 		return [] as IDevice[];
 	}
 
-	const deviceResponse = await fetch(
-		config.internalAPIURL + config.deviceEndpoint,
-		{
-			method: 'POST',
-			headers: {
-				Authorization: jwt ?? config.jwtTester,
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({
-				orgId,
-				getCommands: false, // TODO: Check This Out!
-				getBillingPlans: false,
-				getSensorPackages: false,
-			}),
-		}
-	);
+	try {
+		const deviceResponse = await fetch(
+			config.internalAPIURL + config.deviceEndpoint,
+			{
+				method: 'POST',
+				headers: {
+					Authorization: jwt ?? config.jwtTester,
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					orgId,
+					getCommands: false,
+					getBillingPlans: false,
+					getSensorPackages: false,
+				}),
+			}
+		);
 
-	const { data } = await deviceResponse.json();
+		const { data } = await deviceResponse.json();
 
-	const devices: IDevice[] = Array.isArray(data)
-		? data.map((device) => {
-				return {
-					id: device.comm1,
-					deviceId: device.deviceId,
-					deviceTypeId: device.deviceTypeId,
-					commId: device.comm1,
-					deviceName: device.deviceName,
-					lastTransmitDate: device.lastTransmission,
-					lastTransmitAgo: convertDateStringToTimeAgo(device.lastTransmission),
-					status: device.activationStatus,
-					deployed: device.deployed,
-					active: device.active,
-				};
-		  })
-		: ([] as IDevice[]);
+		const devices: IDevice[] = Array.isArray(data)
+			? data.map((device) => {
+					return {
+						id: device.comm1,
+						deviceId: device.deviceId,
+						deviceTypeId: device.deviceTypeId,
+						commId: device.comm1,
+						deviceName: device.deviceName,
+						lastTransmitDate: device.lastTransmission,
+						lastTransmitAgo: convertDateStringToTimeAgo(
+							device.lastTransmission
+						),
+						status: device.activationStatus,
+						deployed: device.deployed,
+						active: device.active,
+					};
+			  })
+			: ([] as IDevice[]);
 
-	return devices;
+		return devices;
+	} catch {}
+
+	return [];
 };

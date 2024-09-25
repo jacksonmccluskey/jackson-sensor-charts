@@ -10,7 +10,7 @@ export const fetchSensors = async ({
 	}
 
 	const sensorResponse = await fetch(
-		config.internalAPIURL + config.sensorEndpoint + '?feature=Next',
+		config.internalAPIURL + config.sensorEndpoint, // TODO: + '?feature=Next',
 		{
 			method: 'POST',
 			headers: {

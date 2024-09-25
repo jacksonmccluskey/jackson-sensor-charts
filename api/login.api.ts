@@ -5,20 +5,27 @@ export const callLogin = async ({ jwt }) => {
 		return { apiKey: null, orgId: null };
 	}
 
-	const loginResponse = await fetch(
-		config.internalAPIURL + config.authEndpoint,
-		{
-			method: 'GET',
-			headers: { Authorization: jwt ?? config.jwtTester },
-		}
-	);
+	try {
+		const loginResponse = await fetch(
+			config.internalAPIURL + config.authEndpoint,
+			{
+				method: 'GET',
+				headers: { Authorization: jwt ?? config.jwtTester },
+			}
+		);
 
-	const {
-		data: { apiKey, orgId },
-	} = await loginResponse.json();
+		const {
+			data: { apiKey, orgId },
+		} = await loginResponse.json();
 
-	return {
-		apiKey,
-		orgId,
-	};
+		return {
+			apiKey,
+			orgId,
+		};
+	} catch {
+		return {
+			apiKey: null,
+			orgId: null,
+		};
+	}
 };

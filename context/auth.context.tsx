@@ -39,26 +39,34 @@ export const AuthProvider = ({ children }) => {
 	useEffect(() => {
 		if (!router.isReady) return;
 
-		const jwtParam = Array.isArray(router.query.jwt)
-			? router.query.jwt[0]
-			: router.query.jwt;
+		try {
+			const jwtParam = Array.isArray(router.query.jwt)
+				? router.query.jwt[0]
+				: router.query.jwt;
 
-		if (jwtParam && setJWT) {
-			setJWT(jwtParam);
-		}
-	}, [router.isReady, router.query.jwt, setJWT]);
+			if (jwtParam && setJWT) {
+				setJWT(jwtParam);
+			}
+
+			const orgIdParam = Array.isArray(router.query.orgId)
+				? parseInt(router.query.orgId[0])
+				: parseInt(router.query.orgId);
+
+			if (orgIdParam && setOrgId) {
+				setOrgId(orgIdParam);
+			}
+		} catch {}
+	}, [router.isReady, router.query.jwt, router.query.orgId, setJWT, setOrgId]);
 
 	useEffect(() => {
 		const getUserInfo = async () => {
 			if (jwt) {
 				try {
-					const { apiKey, orgId } = await callLogin({ jwt });
+					const { apiKey } = await callLogin({ jwt });
 					setAPIKey(apiKey);
-					setOrgId(orgId);
 				} catch (error) {
-					if (config.apiKeyTester && config.ordIdTester) {
+					if (config.apiKeyTester) {
 						setAPIKey(config.apiKeyTester);
-						setOrgId(config.ordIdTester);
 					}
 				}
 			}

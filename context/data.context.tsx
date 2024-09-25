@@ -81,7 +81,7 @@ const DataContext = createContext<IDataContext>({});
 const currentDate = new Date();
 
 export const DataProvider = ({ children }) => {
-	const { jwt, orgId } = useAuthContext(); // TODO: orgId
+	const { jwt, orgId } = useAuthContext();
 
 	const [timeRange, setTimeRange] = useState<ITimeRange>({
 		startDate: new Date(currentDate.getTime() - 3600000 * 24 * 30.5),
@@ -113,9 +113,11 @@ export const DataProvider = ({ children }) => {
 
 	useEffect(() => {
 		const fetchDeviceData = async () => {
-			const fetchedDevices = await fetchDevices({ jwt, orgId });
+			if (jwt && orgId) {
+				const fetchedDevices = await fetchDevices({ jwt, orgId });
 
-			setDevices(fetchedDevices);
+				setDevices(fetchedDevices);
+			}
 		};
 
 		fetchDeviceData();
