@@ -101,25 +101,12 @@ export const DataProvider = ({ children }) => {
 	const [deviceDataSets, setDeviceDataSets] = useState<IDeviceData[]>([]);
 
 	const [rawDeviceData, setRawDeviceData] = useState<IRawDeviceData[]>(
-		Array.from({ length: 100 }).map((_element, index) => {
+		Array.from({ length: 1 }).map((_element, index) => {
 			return {
 				DataId: index,
-				CommId: Array.from({ length: 15 })
-					.map((_element) => {
-						return Math.floor(Math.random() * 9) + 1;
-					})
-					.join(''),
-				DeviceName: `Device ${index + 1}`,
+				CommId: 'Select Devices',
+				DeviceName: `Select Devices`,
 				DeviceDateTime: new Date().toISOString(),
-				Sensor1: Math.floor(Math.random() * 1000),
-				Sensor2: Math.floor(Math.random() * 1000),
-				Sensor3: Math.floor(Math.random() * 1000),
-				Sensor4: Math.floor(Math.random() * 1000),
-				Sensor5: Math.floor(Math.random() * 1000),
-				Sensor6: Math.floor(Math.random() * 1000),
-				Sensor7: Math.floor(Math.random() * 1000),
-				Sensor8: Math.floor(Math.random() * 1000),
-				Sensor9: Math.floor(Math.random() * 1000),
 			};
 		})
 	);

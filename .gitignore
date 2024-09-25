@@ -3,3 +3,8 @@ node_modules
 */node_modules/*
 .next
 .env*
+Dockerfile
+docker-compose.yml
+nginx
+nginx/*
+nginx.conf
