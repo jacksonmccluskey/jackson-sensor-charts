@@ -6,8 +6,8 @@ import { APIProvider } from '@vis.gl/react-google-maps';
 import { ChakraProvider } from '@chakra-ui/react';
 import { theme } from '../theme';
 import { config } from '../config';
-import { DataProvider } from '../context/data.context';
-import { AuthProvider } from '../context/auth.context';
+import { DataProvider } from '../context/data/data.context';
+import { AuthProvider } from '../context/auth/auth.context';
 
 function MyApp({ Component, pageProps }) {
 	return (

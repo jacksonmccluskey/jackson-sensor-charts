@@ -11,7 +11,7 @@ import {
 } from '@chakra-ui/react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { useDataContext } from '../../context/data.context';
+import { useDataContext } from '../../context/data/data.context';
 
 type TimeSelectionMode = 'time-span' | 'date-range';
 type TimeUnit = 'Hours' | 'Days' | 'Months' | 'Years';

@@ -1,7 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { callLogin } from '../api/login.api';
-import { config } from '../config';
+import { callLogin } from '../../api/login.api';
+import { config } from '../../config';
 
 interface IAuthContext {
 	jwt: string | null;
@@ -30,11 +30,11 @@ export const AuthProvider = ({ children }) => {
 
 	const [jwt, setJWT] = useState<string | null>(null);
 
-	const [apiKey, setAPIKey] = useState<string | null>(null); // TODO: Check Login With JWT
+	const [apiKey, setAPIKey] = useState<string | null>(null);
 
-	const [orgId, setOrgId] = useState<number | null>(null); // TODO: Check Login With JWT
+	const [orgId, setOrgId] = useState<number | null>(null);
 
-	const [orgName, setOrgName] = useState<string | null>(null); // TODO: Check Login With JWT
+	const [orgName, setOrgName] = useState<string | null>(null);
 
 	useEffect(() => {
 		if (!router.isReady) return;
@@ -94,15 +94,3 @@ export const AuthProvider = ({ children }) => {
 };
 
 export const useAuthContext = () => useContext(AuthContext);
-
-/* 
-TODO: Get Login Data With JWT
-
-{
-  "data": {
-    "orgId": 0,
-    "apiKey": "string",
-    "orgName": "string",
-  }
-}
-*/

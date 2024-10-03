@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import DynamicTable from './dynamic.table';
 import { Icon } from '@chakra-ui/react';
 import { FaWifi } from 'react-icons/fa';
-import { useDataContext } from '../../context/data.context';
+import { useDataContext } from '../../context/data/data.context';
 
 const getStatusIcon = (status: string) => {
 	const statusColors = {
@@ -43,7 +43,10 @@ const ParentComponent = () => {
 	);
 	const [selectedRows, setSelectedRows] = useState<string[]>([]);
 	const [searchFilter, setSearchFilter] = useState('');
-	const [sortOrder, setSortOrder] = useState({ column: '', ascending: true });
+	const [sortOrder, setSortOrder] = useState({
+		column: 'lastTransmitDate',
+		ascending: false,
+	});
 
 	useEffect(() => {
 		setSelectedDevices(selectedRows);

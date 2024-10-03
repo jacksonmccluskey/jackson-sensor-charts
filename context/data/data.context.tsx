@@ -5,9 +5,10 @@ import React, {
 	useEffect,
 	useRef,
 } from 'react';
-import { useAuthContext } from './auth.context';
-import { fetchDevices } from '../api/devices.api';
-import { fetchSensors } from '../api/sensors.api';
+import { useAuthContext } from '../auth/auth.context';
+import { fetchDevices } from '../../api/devices.api';
+import { fetchSensors } from '../../api/sensors.api';
+import { getLocations } from '../../api/location.api';
 
 export interface ITimeRange {
 	startDate: Date | null;
@@ -27,34 +28,42 @@ export interface IDevice {
 	active: boolean;
 }
 
+export interface ISensor {
+	dataFieldId: number;
+	dataFieldName: string;
+	displayName: string;
+}
+
 export interface ISensors {
 	deviceTypeId: number;
-	sensors: string[];
+	sensors: ISensor[];
 }
 
-interface ITransmission {
-	deviceDateTime: Date;
-	[key: string]: number | Date;
+export interface ITransmission {
+	time: Date;
+	value: number;
 }
 
-interface IDeviceData {
+export interface IDeviceData {
 	deviceId: number;
 	deviceName: string;
-	deviceTypeId: number;
-	deviceDataOverTime: ITransmission[];
+	transmissions: ITransmission[];
 }
 
-interface IRawDeviceData {
-	DataId: number;
-	CommId: string | number;
-	DeviceName: string;
-	DeviceDateTime: Date | string;
-	[key: string]: string | number | Date | boolean;
+export interface ISensorData {
+	sensorName: string;
+	deviceDataSets: IDeviceData[];
 }
 
 interface IOrganization {
 	orgId: number;
 	organizationName: string;
+}
+
+export interface ILocation {
+	device: IDevice;
+	latitude: number;
+	longitude: number;
 }
 
 interface IDataContext {
@@ -68,12 +77,12 @@ interface IDataContext {
 	setSelectedDevices?: React.Dispatch<React.SetStateAction<string[]>>;
 	sensorSets?: ISensors[];
 	setSensorSets?: React.Dispatch<React.SetStateAction<ISensors[]>>;
-	selectedSensors?: string[];
-	setSelectedSensors?: React.Dispatch<React.SetStateAction<string[]>>;
-	deviceDataSets?: IDeviceData[];
-	setDeviceDataSets?: React.Dispatch<React.SetStateAction<IDeviceData[]>>;
-	rawDeviceData?: IRawDeviceData[];
-	setRawDeviceData?: React.Dispatch<React.SetStateAction<IRawDeviceData[]>>;
+	selectedSensors?: ISensor[];
+	setSelectedSensors?: React.Dispatch<React.SetStateAction<ISensor[]>>;
+	sensorDataSets?: ISensorData[];
+	setSensorDataSets?: React.Dispatch<React.SetStateAction<ISensorData[]>>;
+	locations?: ILocation[];
+	setLocations?: React.Dispatch<React.SetStateAction<ILocation[]>>;
 }
 
 const DataContext = createContext<IDataContext>({});
@@ -92,24 +101,15 @@ export const DataProvider = ({ children }) => {
 
 	const [selectedDevices, setSelectedDevices] = useState<string[]>([]);
 
-	const [sensorSets, setSensorSets] = useState([]);
+	const [sensorSets, setSensorSets] = useState<ISensors[]>([]);
 
-	const [selectedSensors, setSelectedSensors] = useState([]);
+	const [selectedSensors, setSelectedSensors] = useState<ISensor[]>([]);
+
+	const [sensorDataSets, setSensorDataSets] = useState<ISensorData[]>([]);
 
 	const sensorsCacheRef = useRef({});
 
-	const [deviceDataSets, setDeviceDataSets] = useState<IDeviceData[]>([]);
-
-	const [rawDeviceData, setRawDeviceData] = useState<IRawDeviceData[]>(
-		Array.from({ length: 1 }).map((_element, index) => {
-			return {
-				DataId: index,
-				CommId: 'Select Devices',
-				DeviceName: `Select Devices`,
-				DeviceDateTime: new Date().toISOString(),
-			};
-		})
-	);
+	const [locations, setLocations] = useState<ILocation[]>([]);
 
 	useEffect(() => {
 		const fetchDeviceData = async () => {
@@ -145,7 +145,7 @@ export const DataProvider = ({ children }) => {
 						const deviceId = devices.find((device) => {
 							device.deviceTypeId == deviceTypeId;
 						});
-						const sensors = await fetchSensors({ jwt, deviceId }); // TODO: Change To deviceTypeId
+						const sensors = await fetchSensors({ jwt, deviceId });
 						sensorsCacheRef.current[deviceTypeId] = sensors;
 					})
 				);
@@ -160,12 +160,47 @@ export const DataProvider = ({ children }) => {
 		};
 
 		updateSensorSets();
+
+		const getLatestLocations = async () => {
+			const latestLocations: ILocation[] = [];
+
+			const selectedDeviceObjects = selectedDevices.map((selectedDevice) => {
+				return devices.find((device) => device.commId == selectedDevice);
+			});
+
+			for (const device of selectedDeviceObjects) {
+				const latestLocation = await getLocations({
+					deviceId: device.deviceId,
+					timeRange,
+					jwt,
+				});
+
+				console.log(`latestLocation: ${JSON.stringify(latestLocation)}`);
+				if (
+					latestLocation.latitude !== undefined &&
+					latestLocation.longitude !== undefined
+				)
+					latestLocations.push({
+						device,
+						latitude: latestLocation.latitude,
+						longitude: latestLocation.longitude,
+					});
+			}
+
+			setLocations(latestLocations);
+		};
+
+		getLatestLocations();
 	}, [selectedDevices]);
 
 	useEffect(() => {
 		const allSensors = sensorSets.flatMap((sensorSet) => sensorSet.sensors);
 		setSelectedSensors((prevSelectedSensors) =>
-			prevSelectedSensors.filter((sensor) => allSensors.includes(sensor))
+			prevSelectedSensors.filter((sensor) =>
+				allSensors
+					.map((currentSensor) => currentSensor.dataFieldId)
+					.includes(sensor.dataFieldId)
+			)
 		);
 	}, [sensorSets]);
 
@@ -182,10 +217,10 @@ export const DataProvider = ({ children }) => {
 				setSensorSets,
 				selectedSensors,
 				setSelectedSensors,
-				deviceDataSets,
-				setDeviceDataSets,
-				rawDeviceData,
-				setRawDeviceData,
+				sensorDataSets,
+				setSensorDataSets,
+				locations,
+				setLocations,
 			}}
 		>
 			{children}

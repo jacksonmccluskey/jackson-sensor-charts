@@ -1,5 +1,5 @@
 import { config } from '../config';
-import { IDevice } from '../context/data.context';
+import { IDevice } from '../context/data/data.context';
 
 const convertDateStringToTimeAgo = (dateString: string): string => {
 	const date = new Date(dateString);

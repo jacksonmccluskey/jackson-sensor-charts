@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import Chart from 'chart.js/auto';
 import 'chartjs-adapter-date-fns';
-import { formatDistanceStrict } from 'date-fns';
+import { formatDistanceStrict, parse } from 'date-fns';
 
-const LineChartComponent = ({ startDate, endDate, devices, chartId }) => {
+const LineChartComponent = ({
+	startDate,
+	endDate,
+	chartId,
+	dataSets,
+	sensorName,
+}) => {
 	const [chartInstance, setChartInstance] = useState(null);
 	const colorScheme = [
 		'rgba(137, 207, 240, ',
@@ -18,37 +24,38 @@ const LineChartComponent = ({ startDate, endDate, devices, chartId }) => {
 		'rgba(0, 0, 139, ',
 	];
 
-	const generateMockData = () => {
-		const datasets = devices.map((device, index) => {
-			const data = device.sensorData.map((value, i) => ({
-				x: new Date(device.timestamps[i]),
-				y: value,
-			}));
-
-			return {
-				label: device.deviceName,
-				data,
-				backgroundColor: colorScheme[index % colorScheme.length] + '0.33)',
-				borderColor: colorScheme[index % colorScheme.length] + '1)',
-				fill: false,
-				pointRadius: 4,
-				tension: 0.1,
-			};
-		});
-
-		return datasets;
+	const mapDataForSensorToLine = () => {
+		if (Array.isArray(dataSets)) {
+			const datasets = dataSets.map((dataSet: any, index: number) => {
+				return {
+					label: dataSet.deviceName,
+					data: dataSet.transmissions.map((transmission) => {
+						return {
+							x: new Date(transmission.time),
+							y: transmission.value,
+						};
+					}),
+					backgroundColor: colorScheme[index % colorScheme.length] + '0.33)',
+					borderColor: colorScheme[index % colorScheme.length] + '1)',
+					fill: false,
+					pointRadius: 4,
+					tension: 0.1,
+				};
+			});
+			return datasets;
+		}
+		return [];
 	};
 
 	const getTimeUnit = () => {
-		const diff = formatDistanceStrict(new Date(startDate), new Date(endDate), {
-			unit: 'day',
-		});
-
-		const days = parseFloat(diff.split(' ')[0]);
+		const diffInMs =
+			new Date(endDate).getTime() - new Date(startDate).getTime();
+		const days = diffInMs / (1000 * 60 * 60 * 24);
 
 		if (days < 1) return 'hour';
-		if (days <= 7) return 'day';
-		if (days <= 365) return 'month';
+		if (days < 14) return 'day';
+		if (days < 70) return 'week';
+		if (days < 420) return 'month';
 		return 'year';
 	};
 
@@ -63,7 +70,7 @@ const LineChartComponent = ({ startDate, endDate, devices, chartId }) => {
 		const chart = new Chart(ctx, {
 			type: 'line',
 			data: {
-				datasets: generateMockData(),
+				datasets: mapDataForSensorToLine(),
 			},
 			options: {
 				responsive: true,
@@ -82,7 +89,7 @@ const LineChartComponent = ({ startDate, endDate, devices, chartId }) => {
 					},
 					title: {
 						display: true,
-						text: `Sensor Data from ${new Date(
+						text: `${sensorName} Data from ${new Date(
 							startDate
 						).toDateString()} to ${new Date(endDate).toDateString()}`,
 					},
@@ -96,7 +103,13 @@ const LineChartComponent = ({ startDate, endDate, devices, chartId }) => {
 						type: 'time',
 						time: {
 							unit: getTimeUnit(),
-							tooltipFormat: 'PP',
+							displayFormats: {
+								hour: 'HH:mm',
+								day: 'MMM d',
+								month: 'MMM yyyy',
+								year: 'yyyy',
+							},
+							tooltipFormat: 'PPpp',
 						},
 						title: {
 							display: true,
@@ -107,7 +120,7 @@ const LineChartComponent = ({ startDate, endDate, devices, chartId }) => {
 						beginAtZero: true,
 						title: {
 							display: true,
-							text: 'Sensor Values',
+							text: sensorName + '',
 						},
 					},
 				},
@@ -134,7 +147,7 @@ const LineChartComponent = ({ startDate, endDate, devices, chartId }) => {
 				chartInstance.destroy();
 			}
 		};
-	}, [startDate, endDate, devices]);
+	}, [startDate, endDate, dataSets, sensorName]);
 
 	return (
 		<canvas

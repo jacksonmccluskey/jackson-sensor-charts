@@ -18,87 +18,14 @@ import LineChart from '../components/charts/line.chart';
 import Earth from './earth';
 import Map from './map';
 import { getCustomerAPIURL } from '../api/customer.api';
-import DataTable from '../components/tables/raw-data.table';
-import { useDataContext } from '../context/data.context';
-import { useAuthContext } from '../context/auth.context';
-
-const devices1 = [
-	{
-		deviceName: 'Device A',
-		sensorData: [5, 10, 20, 40, 80],
-		timestamps: [
-			'2024-02-01T10:00:00',
-			'2024-02-02T11:00:00',
-			'2024-02-03T12:00:00',
-			'2024-02-04T13:00:00',
-			'2024-02-05T14:00:00',
-		],
-	},
-	{
-		deviceName: 'Device B',
-		sensorData: [10, 20, 40, 80, 160],
-		timestamps: [
-			'2024-02-01T10:00:00',
-			'2024-02-02T11:00:00',
-			'2024-02-03T12:00:00',
-			'2024-02-04T13:00:00',
-			'2024-02-05T14:00:00',
-		],
-	},
-];
-
-const devices2 = [
-	{
-		deviceName: 'Device A',
-		sensorData: [100, 99, 97, 94, 90],
-		timestamps: [
-			'2024-02-01T10:00:00',
-			'2024-02-01T11:00:00',
-			'2024-02-01T12:00:00',
-			'2024-02-01T13:00:00',
-			'2024-02-01T14:00:00',
-		],
-	},
-	{
-		deviceName: 'Device B',
-		sensorData: [100, 98, 92, 84, 58],
-		timestamps: [
-			'2024-02-01T10:00:00',
-			'2024-02-01T11:00:00',
-			'2024-02-01T12:00:00',
-			'2024-02-01T13:00:00',
-			'2024-02-01T14:00:00',
-		],
-	},
-];
-
-const devices3 = [
-	{
-		deviceName: 'Device A',
-		sensorData: [100, 99, 97, 94, 90],
-		timestamps: [
-			'2024-02-01T10:00:00',
-			'2024-02-01T11:00:00',
-			'2024-02-01T12:00:00',
-			'2024-02-01T13:00:00',
-			'2024-02-01T14:00:00',
-		],
-	},
-	{
-		deviceName: 'Device B',
-		sensorData: [100, 98, 92, 84, 58],
-		timestamps: [
-			'2024-02-01T10:00:00',
-			'2024-02-01T11:00:00',
-			'2024-02-01T12:00:00',
-			'2024-02-01T13:00:00',
-			'2024-02-01T14:00:00',
-		],
-	},
-];
-
-const startDate = '2024-02-01T10:00:00';
-const endDate = '2024-02-05T15:00:00';
+import {
+	IDeviceData,
+	ISensorData,
+	useDataContext,
+} from '../context/data/data.context';
+import { useAuthContext } from '../context/auth/auth.context';
+import { getData } from '../api/data.api';
+import { getLocations } from '../api/location.api';
 
 type Tab = 'CHART' | 'GLOBE' | 'MAP' | 'API';
 type FileFormatKey =
@@ -151,9 +78,17 @@ const compressionValues: { [keys in CompressionValue]: string } = {
 export default function Home() {
 	const isMobile = false;
 
-	const { apiKey, orgId } = useAuthContext();
-	const { timeRange, selectedDevices, sensorSets, selectedSensors } =
-		useDataContext();
+	const { apiKey, orgId, jwt } = useAuthContext();
+	const {
+		timeRange,
+		selectedDevices,
+		sensorSets,
+		selectedSensors,
+		sensorDataSets,
+		setSensorDataSets,
+		devices,
+		setLocations,
+	} = useDataContext();
 
 	const [currentTab, setCurrentTab] = useState<Tab | null>(null);
 	const [fileFormat, setFileFormat] = useState<FileFormatKey>('html');
@@ -210,6 +145,73 @@ export default function Home() {
 	};
 
 	const visualizationParentRef = useRef(null);
+
+	const handleGetData = async () => {
+		if (selectedSensors.length && selectedDevices.length) {
+			const newSensorDataSets: ISensorData[] = [];
+			for (const selectedSensor of selectedSensors) {
+				const currentDeviceDataSets: IDeviceData[] = [];
+				for (const selectedDevice of selectedDevices) {
+					const device = devices.find(
+						(device) => device.commId === selectedDevice
+					);
+
+					if (!device) {
+						continue;
+					}
+
+					const deviceId = device.deviceId;
+
+					try {
+						const { data } = await getData({
+							timeRange,
+							deviceId,
+							sensor: selectedSensor.dataFieldName,
+							jwt,
+						});
+
+						if (data) {
+							currentDeviceDataSets.push({
+								deviceId: data.deviceId,
+								deviceName: data.deviceName,
+								transmissions: data.transmissions.map((transmission: any) => ({
+									time: transmission.time,
+									value: transmission.value,
+								})),
+							});
+						}
+					} catch {}
+				}
+
+				newSensorDataSets.push({
+					sensorName: selectedSensor.displayName,
+					deviceDataSets: currentDeviceDataSets,
+				});
+			}
+
+			setSensorDataSets(newSensorDataSets);
+		}
+	};
+
+	const handleGetLocations = async () => {
+		if (!selectedDevices.length) {
+			setLocations([]);
+		}
+
+		const locationResponses = [];
+
+		selectedDevices.forEach(async (selectedDevice) => {
+			const selectedDeviceLocation = await getLocations({
+				deviceId: devices.find((device) => device.commId == selectedDevice),
+				timeRange: timeRange,
+				jwt: jwt,
+			});
+
+			locationResponses.push(selectedDeviceLocation);
+		});
+
+		setLocations(locationResponses);
+	};
 
 	return (
 		<Flex
@@ -313,6 +315,7 @@ export default function Home() {
 									: unselectedButtonStyles)}
 								onClick={() => {
 									setCurrentTab('CHART');
+									handleGetData();
 								}}
 								key='chart'
 							>
@@ -341,7 +344,8 @@ export default function Home() {
 								{...(currentTab == 'MAP'
 									? selectedButtonStyles
 									: unselectedButtonStyles)}
-								onClick={() => {
+								onClick={async () => {
+									await handleGetLocations();
 									setCurrentTab('MAP');
 								}}
 								key='map'
@@ -368,31 +372,28 @@ export default function Home() {
 								</Text>
 							</Button>
 						</Flex>
-						{/* <Box height='1px' width='100%' backgroundColor='brand.black' /> */}
 					</Flex>
-					{currentTab == 'CHART' && [
-						<LineChart
-							startDate={startDate}
-							endDate={endDate}
-							devices={devices1}
-							chartId={1}
-							key={1}
-						/>,
-						<LineChart
-							startDate={startDate}
-							endDate={endDate}
-							devices={devices2}
-							chartId={2}
-							key={2}
-						/>,
-						<LineChart
-							startDate={startDate}
-							endDate={endDate}
-							devices={devices3}
-							chartId={3}
-							key={3}
-						/>,
-					]}
+					{currentTab == 'CHART' &&
+						selectedSensors.map((selectedSensor, index) => {
+							return (
+								<LineChart
+									startDate={timeRange.startDate}
+									endDate={timeRange.endDate}
+									dataSets={
+										sensorDataSets.length
+											? sensorDataSets.find(
+													(sensorDataSet) =>
+														sensorDataSet.sensorName ==
+														selectedSensor.displayName
+											  )?.deviceDataSets
+											: []
+									}
+									sensorName={selectedSensor.displayName}
+									chartId={index}
+									key={index}
+								/>
+							);
+						})}
 					{currentTab == 'GLOBE' && (
 						<Earth parentRef={visualizationParentRef} />
 					)}
@@ -494,26 +495,6 @@ export default function Home() {
 							This URL can be used to pull data into MatLab or other software or
 							to easily view your data online.
 						</Text>,
-						<Button
-							marginTop='32px'
-							paddingTop='16px'
-							paddingBottom='16px'
-							borderRadius='0px'
-							borderWidth='1px'
-							borderColor='brand.black'
-							backgroundColor='brand.5'
-							_hover={{ backgroundColor: 'brand.3' }}
-						>
-							<Text
-								fontSize='lg'
-								color='brand.white'
-								fontWeight='bold'
-								key='data-preview-header'
-							>
-								Preview Data
-							</Text>
-						</Button>,
-						<DataTable key='data-table' styles={{ marginTop: '32px' }} />,
 					]}
 				</Flex>
 			</Flex>

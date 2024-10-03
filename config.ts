@@ -10,6 +10,7 @@ export const config = {
 	sensorEndpoint: process.env.NEXT_PUBLIC_SENSOR_ENDPOINT,
 	customerAPIURL: process.env.NEXT_PUBLIC_CUSTOMER_API_URL,
 	dataEndpoint: process.env.NEXT_PUBLIC_DATA_ENDPOINT,
+	locationEndpoint: process.env.NEXT_PUBLIC_LOCATION_ENDPOINT,
 	jwtTester: process.env.NEXT_PUBLIC_JWT_TESTER ?? null,
 	apiKeyTester: process.env.NEXT_PUBLIC_API_KEY_TESTER ?? null,
 	ordIdTester: process.env.NEXT_PUBLIC_ORD_ID_TESTER

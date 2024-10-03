@@ -13,9 +13,9 @@ export const getCustomerQueryString = ({
 
 	return `?apiKey=${apiKey}&commIDs=${selectedDevices.join(
 		','
-	)}&${time}&fileFormat=${fileFormat}&fieldList=${selectedSensors.join(
-		','
-	)}&orgId=${orgId}`;
+	)}&${time}&fileFormat=${fileFormat}&fieldList=${selectedSensors
+		.map((selectedSensor) => selectedSensor.displayName)
+		.join(',')}&orgId=${orgId}`;
 };
 
 export const getCustomerAPIURL = ({
@@ -29,26 +29,6 @@ export const getCustomerAPIURL = ({
 	return (
 		config.customerAPIURL +
 		getCustomerQueryString({
-			fileFormat,
-			timeRange,
-			apiKey,
-			selectedDevices,
-			orgId,
-			selectedSensors,
-		})
-	);
-};
-
-export const callCustomerAPI = async ({
-	fileFormat,
-	timeRange,
-	apiKey,
-	selectedDevices,
-	orgId,
-	selectedSensors,
-}) => {
-	return await fetch(
-		getCustomerAPIURL({
 			fileFormat,
 			timeRange,
 			apiKey,

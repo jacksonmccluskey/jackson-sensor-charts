@@ -1,16 +1,13 @@
 import { config } from '../config';
+import { ISensor } from '../context/data/data.context';
 
-export const fetchSensors = async ({
-	jwt,
-	deviceId,
-	// deviceTypeId,
-}): Promise<string[]> => {
+export const fetchSensors = async ({ jwt, deviceId }): Promise<ISensor[]> => {
 	if (!jwt) {
 		return [];
 	}
 
 	const sensorResponse = await fetch(
-		config.internalAPIURL + config.sensorEndpoint, // TODO: + '?feature=Next',
+		config.internalAPIURL + config.sensorEndpoint,
 		{
 			method: 'POST',
 			headers: {
@@ -19,14 +16,20 @@ export const fetchSensors = async ({
 			},
 			body: JSON.stringify({
 				deviceIdList: deviceId,
-			}), // TODO: Change deviceIdList: [deviceId] to deviceTypeId: deviceTypeId
+			}),
 		}
 	);
 
 	const { data } = await sensorResponse.json();
 
 	const sensors = Array.isArray(data)
-		? data.map((sensor) => sensor.displayName)
+		? data.map((sensor) => {
+				return {
+					dataFieldId: sensor.dataFieldId,
+					dataFieldName: sensor.dataFieldName,
+					displayName: sensor.displayName,
+				};
+		  })
 		: [];
 
 	return sensors;

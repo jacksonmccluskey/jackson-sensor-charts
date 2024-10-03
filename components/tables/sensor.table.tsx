@@ -2,19 +2,11 @@
 
 import React, { useState } from 'react';
 import DynamicTable from './dynamic.table';
-import { useDataContext } from '../../context/data.context';
+import { ISensor, useDataContext } from '../../context/data/data.context';
 import { Flex } from '@chakra-ui/react';
 
 const SensorTable = () => {
-	const { sensorSets, selectedSensors, setSelectedSensors, devices } =
-		useDataContext();
-
-	const deviceTypeIdToName = devices.reduce((acc, device) => {
-		if (!acc[device.deviceTypeId]) {
-			acc[device.deviceTypeId] = `Device Type ${device.deviceTypeId}`;
-		}
-		return acc;
-	}, {});
+	const { sensorSets, selectedSensors, setSelectedSensors } = useDataContext();
 
 	const [sortOrder, setSortOrder] = useState({
 		column: 'sensor',
@@ -30,17 +22,16 @@ const SensorTable = () => {
 
 	return (
 		<Flex flexDirection='row'>
-			{sensorSets.map((sensorSet) => {
+			{sensorSets.map((sensorSet, index) => {
 				const { deviceTypeId, sensors } = sensorSet;
 
-				const deviceTypeName =
-					deviceTypeIdToName[deviceTypeId] || `Device Type ${deviceTypeId}`;
+				const deviceTypeName = `Device Type ${deviceTypeId}`;
 
 				const columnsConfig = [{ label: deviceTypeName, accessor: 'sensor' }];
 
-				const tableData = sensors.map((sensor: string) => ({
-					id: sensor,
-					sensor,
+				const tableData = sensors.map((sensor: ISensor) => ({
+					id: sensor.displayName,
+					sensor: sensor.displayName,
 				}));
 
 				const sortedData = [...tableData].sort((a, b) => {
@@ -55,51 +46,60 @@ const SensorTable = () => {
 				});
 
 				const handleSelectRow = (sensor: string) => {
-					if (selectedSensors.length === 1 && selectedSensors[0] === sensor) {
+					if (
+						selectedSensors.length === 1 &&
+						selectedSensors[0].displayName === sensor
+					) {
 						setSelectedSensors([]);
 					} else {
-						setSelectedSensors([sensor]);
+						setSelectedSensors([
+							sensors.find(
+								(currentSensor) => currentSensor.displayName == sensor
+							),
+						]);
 					}
 				};
 
 				const handleCheckboxClick = (e: any, sensor: string) => {
 					e.stopPropagation();
-					setSelectedSensors((prevSelectedSensors) =>
-						prevSelectedSensors.includes(sensor)
+					setSelectedSensors((prevSelectedSensors: ISensor[]) =>
+						prevSelectedSensors.some(
+							(prevSelectedSensor: ISensor) =>
+								prevSelectedSensor.displayName == sensor
+						)
 							? prevSelectedSensors.filter(
-									(selectedSensor: string) => selectedSensor !== sensor
+									(selectedSensor: ISensor) =>
+										selectedSensor.displayName !== sensor
 							  )
-							: [...prevSelectedSensors, sensor]
+							: [
+									...prevSelectedSensors,
+									sensors.find(
+										(currentSensor: ISensor) =>
+											currentSensor.displayName == sensor
+									),
+							  ]
 					);
 				};
 
 				const handleSelectAllRows = () => {
-					const sensorsInTable = sensors;
-
-					const allSelected = sensorsInTable.every((sensor) =>
-						selectedSensors.includes(sensor)
+					const allSelected = sensors.every((sensor) =>
+						selectedSensors.some(
+							(selectedSensor) =>
+								selectedSensor.displayName == sensor.displayName
+						)
 					);
 
-					if (allSelected) {
-						setSelectedSensors((prevSelectedSensors: string[]) =>
-							prevSelectedSensors.filter(
-								(sensor: string) => !sensorsInTable.includes(sensor)
-							)
-						);
-					} else {
-						setSelectedSensors((prevSelectedSensors: string[]) => [
-							...prevSelectedSensors,
-							...sensorsInTable,
-						]);
-					}
+					setSelectedSensors(allSelected ? [] : sensors);
 				};
 
 				return (
 					<DynamicTable
-						key={deviceTypeId}
+						key={index}
 						columnsConfig={columnsConfig}
 						data={sortedData}
-						selectedRows={selectedSensors}
+						selectedRows={selectedSensors.map(
+							(selectedRow) => selectedRow.displayName
+						)}
 						onSelectRow={handleSelectRow}
 						onSelectAllRows={handleSelectAllRows}
 						sortOrder={sortOrder}
