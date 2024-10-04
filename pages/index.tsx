@@ -193,26 +193,6 @@ export default function Home() {
 		}
 	};
 
-	const handleGetLocations = async () => {
-		if (!selectedDevices.length) {
-			setLocations([]);
-		}
-
-		const locationResponses = [];
-
-		selectedDevices.forEach(async (selectedDevice) => {
-			const selectedDeviceLocation = await getLocations({
-				deviceId: devices.find((device) => device.commId == selectedDevice),
-				timeRange: timeRange,
-				jwt: jwt,
-			});
-
-			locationResponses.push(selectedDeviceLocation);
-		});
-
-		setLocations(locationResponses);
-	};
-
 	return (
 		<Flex
 			height={isMobile ? '100%' : '100vh'}
@@ -345,7 +325,6 @@ export default function Home() {
 									? selectedButtonStyles
 									: unselectedButtonStyles)}
 								onClick={async () => {
-									await handleGetLocations();
 									setCurrentTab('MAP');
 								}}
 								key='map'

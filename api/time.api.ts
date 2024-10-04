@@ -13,7 +13,5 @@ export const formatDate = (date: Date | null) => {
 };
 
 export const constructTime = (startDate: Date, endDate: Date) => {
-	return `startDateTime=${formatDate(startDate)}&endDateTime=${formatDate(
-		endDate
-	)}`;
+	return `startDate=${formatDate(startDate)}&endDate=${formatDate(endDate)}`;
 };

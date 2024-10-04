@@ -1,7 +1,7 @@
 import { config } from '../config';
 
 export const callLogin = async ({ jwt }) => {
-	if (!jwt || !config.jwtTester) {
+	if (!jwt && !config.jwtTester) {
 		return { apiKey: null, orgId: null };
 	}
 

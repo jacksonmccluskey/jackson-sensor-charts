@@ -175,7 +175,6 @@ export const DataProvider = ({ children }) => {
 					jwt,
 				});
 
-				console.log(`latestLocation: ${JSON.stringify(latestLocation)}`);
 				if (
 					latestLocation.latitude !== undefined &&
 					latestLocation.longitude !== undefined
