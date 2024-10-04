@@ -9,6 +9,7 @@ import {
 	Radio,
 	Link,
 	IconButton,
+	Box,
 } from '@chakra-ui/react';
 import { CopyIcon } from '@chakra-ui/icons';
 import TimePicker from '../components/pickers/time-picker';
@@ -87,7 +88,6 @@ export default function Home() {
 		sensorDataSets,
 		setSensorDataSets,
 		devices,
-		setLocations,
 	} = useDataContext();
 
 	const [currentTab, setCurrentTab] = useState<Tab | null>(null);
@@ -132,7 +132,9 @@ export default function Home() {
 		backgroundColor: 'brand.white',
 		_hover: { backgroundColor: 'brand.base' },
 		borderRadius: 0,
-		marginRight: '8px',
+		borderTopLeftRadius: '8px',
+		borderTopRightRadius: '8px',
+		borderBottomWidth: 0,
 	};
 
 	const unselectedButtonStyles = {
@@ -141,7 +143,9 @@ export default function Home() {
 		borderColor: 'brand.black',
 		borderRadius: 0,
 		_hover: { backgroundColor: 'brand.3' },
-		marginRight: '8px',
+		borderTopLeftRadius: '8px',
+		borderTopRightRadius: '8px',
+		borderBottomWidth: 0,
 	};
 
 	const visualizationParentRef = useRef(null);
@@ -351,6 +355,7 @@ export default function Home() {
 								</Text>
 							</Button>
 						</Flex>
+						<Box height='2px' width='100%' backgroundColor='brand.black' />
 					</Flex>
 					{currentTab == 'CHART' &&
 						selectedSensors.map((selectedSensor, index) => {

@@ -6,7 +6,7 @@ export const getLocations = async ({
 	jwt,
 }): Promise<{ latitude?: number; longitude?: number }> => {
 	try {
-		const loginResponse = await fetch(
+		const locationResponse = await fetch(
 			config.internalAPIURL + config.locationEndpoint,
 			{
 				body: JSON.stringify({
@@ -22,11 +22,9 @@ export const getLocations = async ({
 			}
 		);
 
-		const loginResponseJSON = await loginResponse.json();
+		const locationResponseJSON = await locationResponse.json();
 
-		console.log(JSON.stringify(loginResponseJSON));
-
-		const { data } = loginResponseJSON;
+		const { data } = locationResponseJSON;
 
 		if (data.length)
 			return {

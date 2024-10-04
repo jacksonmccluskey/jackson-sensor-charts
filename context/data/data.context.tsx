@@ -9,6 +9,7 @@ import { useAuthContext } from '../auth/auth.context';
 import { fetchDevices } from '../../api/devices.api';
 import { fetchSensors } from '../../api/sensors.api';
 import { getLocations } from '../../api/location.api';
+import { getData } from '../../api/data.api';
 
 export interface ITimeRange {
 	startDate: Date | null;
@@ -142,21 +143,25 @@ export const DataProvider = ({ children }) => {
 			if (deviceTypeIdsToFetch.length > 0) {
 				await Promise.all(
 					deviceTypeIdsToFetch.map(async (deviceTypeId) => {
-						const deviceId = devices.find((device) => {
-							device.deviceTypeId == deviceTypeId;
+						const deviceInQuestion = devices.find((device) => {
+							return device.deviceTypeId == deviceTypeId;
 						});
-						const sensors = await fetchSensors({ jwt, deviceId });
-						sensorsCacheRef.current[deviceTypeId] = sensors;
+
+						if (!!deviceInQuestion && deviceInQuestion.deviceId !== undefined) {
+							const deviceId = deviceInQuestion.deviceId;
+							const sensors = await fetchSensors({ jwt, deviceId });
+							sensorsCacheRef.current[deviceTypeId] = sensors;
+
+							const updatedSensorSets = deviceTypeIds.map((deviceTypeId) => ({
+								deviceTypeId,
+								sensors: sensorsCacheRef.current[deviceTypeId],
+							}));
+
+							setSensorSets(updatedSensorSets);
+						}
 					})
 				);
 			}
-
-			const updatedSensorSets = deviceTypeIds.map((deviceTypeId) => ({
-				deviceTypeId,
-				sensors: sensorsCacheRef.current[deviceTypeId],
-			}));
-
-			setSensorSets(updatedSensorSets);
 		};
 
 		updateSensorSets();
@@ -191,6 +196,61 @@ export const DataProvider = ({ children }) => {
 
 		getLatestLocations();
 	}, [selectedDevices]);
+
+	useEffect(() => {
+		const handleGetData = async () => {
+			if (selectedSensors.length && selectedDevices.length) {
+				const newSensorDataSets: ISensorData[] = [];
+				for (const selectedSensor of selectedSensors) {
+					const currentDeviceDataSets: IDeviceData[] = [];
+					for (const selectedDevice of selectedDevices) {
+						const device = devices.find(
+							(device) => device.commId === selectedDevice
+						);
+
+						if (!device) {
+							continue;
+						}
+
+						const deviceId = device.deviceId;
+
+						try {
+							const { data } = await getData({
+								timeRange,
+								deviceId,
+								sensor: selectedSensor.dataFieldName,
+								jwt,
+							});
+
+							if (data) {
+								currentDeviceDataSets.push({
+									deviceId: data.deviceId,
+									deviceName: data.deviceName,
+									transmissions: data.transmissions.map(
+										(transmission: any) => ({
+											time: transmission.time,
+											value: transmission.value,
+										})
+									),
+								});
+							}
+						} catch {}
+					}
+
+					newSensorDataSets.push({
+						sensorName: selectedSensor.displayName,
+						deviceDataSets: currentDeviceDataSets,
+					});
+				}
+
+				setSensorDataSets(newSensorDataSets);
+			} else {
+				setSensorDataSets([]);
+			}
+		};
+
+		handleGetData();
+	}, [timeRange, selectedDevices, selectedSensors]);
 
 	useEffect(() => {
 		const allSensors = sensorSets.flatMap((sensorSet) => sensorSet.sensors);
