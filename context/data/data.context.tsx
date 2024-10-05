@@ -84,6 +84,8 @@ interface IDataContext {
 	setSensorDataSets?: React.Dispatch<React.SetStateAction<ISensorData[]>>;
 	locations?: ILocation[];
 	setLocations?: React.Dispatch<React.SetStateAction<ILocation[]>>;
+	showMapModal?: boolean;
+	setShowMapModal?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const DataContext = createContext<IDataContext>({});
@@ -111,6 +113,8 @@ export const DataProvider = ({ children }) => {
 	const sensorsCacheRef = useRef({});
 
 	const [locations, setLocations] = useState<ILocation[]>([]);
+
+	const [showMapModal, setShowMapModal] = useState<boolean>(false);
 
 	useEffect(() => {
 		const fetchDeviceData = async () => {
@@ -167,11 +171,11 @@ export const DataProvider = ({ children }) => {
 		updateSensorSets();
 
 		const getLatestLocations = async () => {
-			const latestLocations: ILocation[] = [];
-
 			const selectedDeviceObjects = selectedDevices.map((selectedDevice) => {
 				return devices.find((device) => device.commId == selectedDevice);
 			});
+
+			let deviceIndex = 0;
 
 			for (const device of selectedDeviceObjects) {
 				const latestLocation = await getLocations({
@@ -183,15 +187,20 @@ export const DataProvider = ({ children }) => {
 				if (
 					latestLocation.latitude !== undefined &&
 					latestLocation.longitude !== undefined
-				)
-					latestLocations.push({
+				) {
+					const newLocation = {
 						device,
 						latitude: latestLocation.latitude,
 						longitude: latestLocation.longitude,
-					});
-			}
+					};
 
-			setLocations(latestLocations);
+					setLocations((prevLocations) =>
+						deviceIndex > 0 ? [...prevLocations, newLocation] : [newLocation]
+					);
+
+					deviceIndex++;
+				}
+			}
 		};
 
 		getLatestLocations();
@@ -280,6 +289,8 @@ export const DataProvider = ({ children }) => {
 				setSensorDataSets,
 				locations,
 				setLocations,
+				showMapModal,
+				setShowMapModal,
 			}}
 		>
 			{children}

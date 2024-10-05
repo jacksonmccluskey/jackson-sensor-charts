@@ -1,7 +1,12 @@
 import { config } from '../config';
+import { constructTime } from './time.api';
 
 export const getDataQueryString = ({ timeRange, deviceId, sensor }) => {
-	return `?deviceId=${deviceId}&startDateTime=${timeRange.startDate}&endDateTime=${timeRange.endDate}&sensorShortName=${sensor}`;
+	return `?deviceId=${deviceId}&${constructTime(
+		timeRange.startDate,
+		timeRange.endDate,
+		true
+	)}&sensorShortName=${sensor}`;
 };
 
 export const getData = async ({

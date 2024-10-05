@@ -26,9 +26,8 @@ import {
 } from '../context/data/data.context';
 import { useAuthContext } from '../context/auth/auth.context';
 import { getData } from '../api/data.api';
-import { getLocations } from '../api/location.api';
 
-type Tab = 'CHART' | 'GLOBE' | 'MAP' | 'API';
+type Tab = 'CHART' | 'MAP' | 'API';
 type FileFormatKey =
 	| 'html'
 	| 'csv'
@@ -129,15 +128,19 @@ export default function Home() {
 	]);
 
 	const selectedButtonStyles = {
+		flex: 1,
 		backgroundColor: 'brand.white',
 		_hover: { backgroundColor: 'brand.base' },
 		borderRadius: 0,
 		borderTopLeftRadius: '8px',
 		borderTopRightRadius: '8px',
-		borderBottomWidth: 0,
+		borderBottomWidth: '2px',
+		borderColor: 'brand.black',
+		minWidth: '128px',
 	};
 
 	const unselectedButtonStyles = {
+		flex: 1,
 		backgroundColor: 'brand.5',
 		borderWidth: '1px',
 		borderColor: 'brand.black',
@@ -145,7 +148,8 @@ export default function Home() {
 		_hover: { backgroundColor: 'brand.3' },
 		borderTopLeftRadius: '8px',
 		borderTopRightRadius: '8px',
-		borderBottomWidth: 0,
+		borderBottomWidth: '2px',
+		minWidth: '128px',
 	};
 
 	const visualizationParentRef = useRef(null);
@@ -310,21 +314,6 @@ export default function Home() {
 								</Text>
 							</Button>
 							<Button
-								{...(currentTab == 'GLOBE'
-									? selectedButtonStyles
-									: unselectedButtonStyles)}
-								onClick={() => {
-									setCurrentTab('GLOBE');
-								}}
-								key='globe'
-							>
-								<Text
-									color={currentTab == 'GLOBE' ? 'brand.medium' : 'brand.white'}
-								>
-									Global Map
-								</Text>
-							</Button>
-							<Button
 								{...(currentTab == 'MAP'
 									? selectedButtonStyles
 									: unselectedButtonStyles)}
@@ -355,7 +344,6 @@ export default function Home() {
 								</Text>
 							</Button>
 						</Flex>
-						<Box height='2px' width='100%' backgroundColor='brand.black' />
 					</Flex>
 					{currentTab == 'CHART' &&
 						selectedSensors.map((selectedSensor, index) => {
@@ -378,9 +366,6 @@ export default function Home() {
 								/>
 							);
 						})}
-					{currentTab == 'GLOBE' && (
-						<Earth parentRef={visualizationParentRef} />
-					)}
 					{currentTab == 'MAP' && <Map />}
 					{currentTab == 'API' && [
 						<Select

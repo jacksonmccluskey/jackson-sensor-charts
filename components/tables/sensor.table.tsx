@@ -29,6 +29,10 @@ const SensorTable = () => {
 
 				const columnsConfig = [{ label: deviceTypeName, accessor: 'sensor' }];
 
+				if (!sensors?.length) {
+					return null;
+				}
+
 				const tableData = sensors.map((sensor: ISensor) => ({
 					id: sensor.displayName,
 					sensor: sensor.displayName,

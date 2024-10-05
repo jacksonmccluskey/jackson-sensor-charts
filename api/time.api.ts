@@ -12,6 +12,12 @@ export const formatDate = (date: Date | null) => {
 	return `${year}-${month}-${day} ${hours}:${minutes}`;
 };
 
-export const constructTime = (startDate: Date, endDate: Date) => {
-	return `startDate=${formatDate(startDate)}&endDate=${formatDate(endDate)}`;
+export const constructTime = (
+	startDate: Date,
+	endDate: Date,
+	hasTime: boolean = false
+) => {
+	return `startDate${hasTime ? 'Time' : ''}=${formatDate(startDate)}&endDate${
+		hasTime ? 'Time' : ''
+	}=${formatDate(endDate)}`;
 };
