@@ -51,6 +51,11 @@ export const MapModal = ({
 		setFormattedLocation(newFormattedLocation);
 	}, [coordinateFormat]);
 
+	const batteryPercentage: number =
+		batteryVoltage && batteryVoltage > 0
+			? Math.floor((batteryVoltage / 12.5) * 100)
+			: 0;
+
 	return (
 		<Flex
 			flexDirection='row'
@@ -146,7 +151,7 @@ export const MapModal = ({
 				alignItems='center'
 			>
 				<BatteryGauge
-					value={Math.floor((batteryVoltage / 12.5) * 100)}
+					value={batteryPercentage}
 					style={{ maxHeight: '128px', maxWidth: '128px' }}
 				/>
 				<Gauge
