@@ -2,7 +2,6 @@ import { Flex, Text, Image, RadioGroup, Stack, Radio } from '@chakra-ui/react';
 import buoyBase64 from '../../components/base64/buoy';
 import { useState } from 'react';
 import BatteryGauge from 'react-battery-gauge';
-import { Thermometer } from 'react-thermostat';
 import Gauge from '../../components/charts/gauge.chart';
 
 export const MapModal = () => {
@@ -128,3 +127,5 @@ export const MapModal = () => {
 		</Flex>
 	);
 };
+
+export default MapModal;
