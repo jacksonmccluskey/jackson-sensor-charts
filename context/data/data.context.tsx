@@ -16,10 +16,16 @@ export interface ITimeRange {
 	endDate: Date | null;
 }
 
+export interface ILocation {
+	latitude: number;
+	longitude: number;
+}
+
 export interface IDevice {
 	id: string;
 	deviceId: string | number;
 	deviceTypeId: number;
+	deviceTypeName?: string;
 	commId: string;
 	deviceName: string;
 	lastTransmitDate: string;
@@ -27,6 +33,12 @@ export interface IDevice {
 	status: string;
 	deployed: boolean;
 	active: boolean;
+	batteryVoltage?: number;
+	temperature?: number;
+	latitude?: number;
+	longitude?: number;
+	gpsQuality?: number;
+	track?: ILocation[];
 }
 
 export interface ISensor {
@@ -61,16 +73,6 @@ interface IOrganization {
 	organizationName: string;
 }
 
-export interface ILocation {
-	latitude: number;
-	longitude: number;
-}
-
-export interface IDeviceLocation {
-	device: IDevice;
-	location: ILocation;
-}
-
 export interface IMapModal {
 	isShowing: boolean;
 	device?: IDevice;
@@ -92,10 +94,10 @@ interface IDataContext {
 	setSelectedSensors?: React.Dispatch<React.SetStateAction<ISensor[]>>;
 	sensorDataSets?: ISensorData[];
 	setSensorDataSets?: React.Dispatch<React.SetStateAction<ISensorData[]>>;
-	locations?: IDeviceLocation[];
-	setLocations?: React.Dispatch<React.SetStateAction<IDeviceLocation[]>>;
 	showMapModal?: IMapModal;
 	setShowMapModal?: React.Dispatch<React.SetStateAction<IMapModal>>;
+	locations?: IDevice[];
+	setLocations?: React.Dispatch<React.SetStateAction<IDevice[]>>;
 }
 
 const DataContext = createContext<IDataContext>({});
@@ -122,11 +124,11 @@ export const DataProvider = ({ children }) => {
 
 	const sensorsCacheRef = useRef({});
 
-	const [locations, setLocations] = useState<IDeviceLocation[]>([]);
-
 	const [showMapModal, setShowMapModal] = useState<IMapModal>({
 		isShowing: false,
 	});
+
+	const [locations, setLocations] = useState<IDevice[]>([]);
 
 	useEffect(() => {
 		const fetchDeviceData = async () => {
@@ -200,16 +202,20 @@ export const DataProvider = ({ children }) => {
 					latestLocation.latitude !== undefined &&
 					latestLocation.longitude !== undefined
 				) {
-					const newLocation = {
-						device,
-						location: {
-							latitude: latestLocation.latitude,
-							longitude: latestLocation.longitude,
-						},
+					const updatedDevice: IDevice = {
+						...device,
+						temperature: latestLocation.temperature,
+						deviceTypeName: latestLocation.deviceTypeName,
+						batteryVoltage: latestLocation.batteryVoltage,
+						latitude: latestLocation.latitude,
+						longitude: latestLocation.longitude,
+						gpsQuality: latestLocation.gpsQuality,
 					};
 
 					setLocations((prevLocations) =>
-						deviceIndex > 0 ? [...prevLocations, newLocation] : [newLocation]
+						deviceIndex > 0
+							? [...prevLocations, updatedDevice]
+							: [updatedDevice]
 					);
 
 					deviceIndex++;

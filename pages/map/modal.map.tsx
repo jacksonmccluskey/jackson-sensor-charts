@@ -1,22 +1,55 @@
 import { Flex, Text, Image, RadioGroup, Stack, Radio } from '@chakra-ui/react';
 import buoyBase64 from '../../components/base64/buoy';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import BatteryGauge from 'react-battery-gauge';
 import Gauge from '../../components/charts/gauge.chart';
+import { ILocation } from '../../context/data/data.context';
+import { getFormattedLocation } from '../../helpers/get-formatted-location';
 
-export const MapModal = () => {
-	const deviceType = 'My Kind Of Device';
-	const deviceName = 'MY-DEVICE-2024';
-	const commId = '123456789012345';
-	const dateTimeUTC = new Date().toUTCString();
-	const latitude = "0°46'38.1324'' S";
-	const longitude = "1°8'33.2808'' W";
-	const gpsQuality = 3;
-	const sst = 0.05;
+export interface IMapModal {
+	deviceTypeName: string;
+	deviceName: string;
+	commId: string | number;
+	dateTimeUTC: string;
+	latitude: number;
+	longitude: number;
+	gpsQuality: number;
+	temperature: number;
+	batteryVoltage: number;
+}
 
+export const MapModal = ({
+	deviceTypeName,
+	deviceName,
+	commId,
+	dateTimeUTC,
+	latitude,
+	longitude,
+	gpsQuality,
+	temperature,
+	batteryVoltage,
+}: IMapModal) => {
 	type CoordinateFormat = 'D' | 'DM' | 'DMS';
 	const [coordinateFormat, setCoordinateFormat] =
 		useState<CoordinateFormat>('D');
+
+	const [formattedLocation, setFormattedLocation] = useState<{
+		formattedLatitude: number | string;
+		formattedLongitude: number | string;
+	}>({
+		formattedLatitude: latitude,
+		formattedLongitude: longitude,
+	});
+
+	useEffect(() => {
+		const newFormattedLocation = getFormattedLocation({
+			coordinateFormat,
+			latitude,
+			longitude,
+		});
+
+		setFormattedLocation(newFormattedLocation);
+	}, [coordinateFormat]);
 
 	return (
 		<Flex
@@ -48,31 +81,30 @@ export const MapModal = () => {
 							{deviceName}
 						</Text>
 						<Text minWidth='fit-content' fontStyle='italic'>
-							{`Type: ${deviceType}`}
+							{`TYPE: ${deviceTypeName}`}
 						</Text>
 						<Text minWidth='fit-content' fontStyle='italic' flex={1}>
-							{`ID: ${commId}`}
+							{`COMM ID: ${commId}`}
 						</Text>
 					</Flex>
 				</Flex>
 				<Text maxWidth='fit-content' fontWeight='bold' marginTop='16px'>
-					{dateTimeUTC}
+					{`${dateTimeUTC}`}
 				</Text>
 				<Flex
 					flexDirection='row'
-					justifyContent='space-between'
+					justifyContent='flex-start'
 					alignItems='center'
 					marginTop='16px'
 					fontWeight='bold'
 					flexWrap='wrap'
 					width='100%'
-					maxWidth='296px'
 				>
-					<Text minWidth='fit-content' flex={1}>
-						{latitude}
+					<Text minWidth='fit-content'>
+						{formattedLocation.formattedLatitude}
 					</Text>
-					<Text minWidth='fit-content' flex={1}>
-						{longitude}
+					<Text minWidth='fit-content' marginLeft='16px'>
+						{formattedLocation.formattedLongitude}
 					</Text>
 				</Flex>
 				<Flex
@@ -114,13 +146,13 @@ export const MapModal = () => {
 				alignItems='center'
 			>
 				<BatteryGauge
-					value={99}
+					value={Math.floor((batteryVoltage / 12.5) * 100)}
 					style={{ maxHeight: '128px', maxWidth: '128px' }}
 				/>
 				<Gauge
-					min={-50}
-					max={50}
-					value={0.05}
+					min={-99}
+					max={99}
+					value={temperature}
 					style={{ height: '128px', width: '128px' }}
 				/>
 			</Flex>

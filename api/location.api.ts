@@ -4,7 +4,14 @@ export const getLocations = async ({
 	deviceId,
 	timeRange,
 	jwt,
-}): Promise<{ latitude?: number; longitude?: number }> => {
+}): Promise<{
+	latitude?: number;
+	longitude?: number;
+	temperature?: number;
+	deviceTypeName?: string;
+	batteryVoltage?: number;
+	gpsQuality?: number;
+}> => {
 	try {
 		const locationResponse = await fetch(
 			config.internalAPIURL + config.locationEndpoint,
@@ -30,6 +37,10 @@ export const getLocations = async ({
 			return {
 				latitude: data[0].latitude,
 				longitude: data[0].longitude,
+				temperature: data[0].sst,
+				deviceTypeName: data[0].deviceTypeName,
+				batteryVoltage: data[0].battVoltage,
+				gpsQuality: data[0].gpsQuality,
 			};
 	} catch {}
 

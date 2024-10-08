@@ -6,7 +6,7 @@ import buoyBase64 from '../../components/base64/buoy';
 import { Image, Flex, Text, Button } from '@chakra-ui/react';
 
 export const GoogleMaps = () => {
-	const { locations, setShowMapModal, showMapModal } = useDataContext();
+	const { locations, setShowMapModal } = useDataContext();
 	const { isLoaded, loadError } = useLoadScript({
 		googleMapsApiKey: config.googleMapsAPIKey,
 	});
@@ -20,8 +20,8 @@ export const GoogleMaps = () => {
 
 	const mapCenter = locations.length
 		? {
-				lat: locations[0].location.latitude,
-				lng: locations[0].location.longitude,
+				lat: locations[0].latitude,
+				lng: locations[0].longitude,
 		  }
 		: { lat: 32, lng: -70 };
 
@@ -42,15 +42,15 @@ export const GoogleMaps = () => {
 			{locations.length
 				? locations.map((location, index) => {
 						if (
-							location.location.latitude !== undefined &&
-							location.location.longitude !== undefined
+							location.latitude !== undefined &&
+							location.longitude !== undefined
 						) {
 							return (
 								<OverlayView
 									key={index}
 									position={{
-										lat: location.location.latitude,
-										lng: location.location.longitude,
+										lat: location.latitude,
+										lng: location.longitude,
 									}}
 									mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
 								>
@@ -61,8 +61,8 @@ export const GoogleMaps = () => {
 										minWidth='fit-content'
 									>
 										<Button
-											onClick={() => handleDeviceClick(location.device)}
-											aria-label={location.device.deviceName}
+											onClick={() => handleDeviceClick(location)}
+											aria-label={location.deviceName}
 											backgroundColor='transparent'
 											_hover={{
 												backgroundColor: 'transparent',
@@ -76,7 +76,7 @@ export const GoogleMaps = () => {
 											marginTop='4px'
 											whiteSpace='nowrap'
 										>
-											{location.device.deviceName}
+											{location.deviceName}
 										</Text>
 									</Flex>
 								</OverlayView>

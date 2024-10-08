@@ -65,6 +65,8 @@ export const fetchDevices = async ({
 
 		const { data } = await deviceResponse.json();
 
+		console.log(JSON.stringify(data));
+
 		const devices: IDevice[] = Array.isArray(data)
 			? data.map((device) => {
 					return {
@@ -80,6 +82,10 @@ export const fetchDevices = async ({
 						status: device.activationStatus,
 						deployed: device.deployed,
 						active: device.active,
+						batteryVoltage: device.battVoltage,
+						latitude: device.latitude,
+						longitude: device.longitude,
+						gpsQuality: device.gpsQuality,
 					};
 			  })
 			: ([] as IDevice[]);
