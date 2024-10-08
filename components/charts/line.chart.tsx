@@ -116,7 +116,6 @@ const LineChartComponent = ({
 						},
 					},
 					y: {
-						beginAtZero: true,
 						title: {
 							display: true,
 							text: sensorName + '',

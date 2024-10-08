@@ -3,7 +3,6 @@ import buoyBase64 from '../../components/base64/buoy';
 import { useEffect, useState } from 'react';
 import BatteryGauge from 'react-battery-gauge';
 import Gauge from '../../components/charts/gauge.chart';
-import { ILocation } from '../../context/data/data.context';
 import { getFormattedLocation } from '../../helpers/get-formatted-location';
 
 export interface IMapModal {
