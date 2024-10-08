@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { GoogleMap, useLoadScript, OverlayView } from '@react-google-maps/api';
 import { config } from '../../config';
 import { IDevice, useDataContext } from '../../context/data/data.context';
@@ -6,7 +6,7 @@ import buoyBase64 from '../../components/base64/buoy';
 import { Image, Flex, Text, Button } from '@chakra-ui/react';
 
 export const GoogleMaps = () => {
-	const { locations, setShowMapModal } = useDataContext();
+	const { locations, setShowMapModal, showMapModal } = useDataContext();
 	const { isLoaded, loadError } = useLoadScript({
 		googleMapsApiKey: config.googleMapsAPIKey,
 	});
@@ -14,12 +14,15 @@ export const GoogleMaps = () => {
 	if (loadError) return <div>Error Loading Maps</div>;
 	if (!isLoaded) return <div>Loading Maps</div>;
 
-	const handleDeviceClick = (_device: IDevice) => {
-		setShowMapModal(true);
+	const handleDeviceClick = (device: IDevice) => {
+		setShowMapModal({ isShowing: true, device });
 	};
 
 	const mapCenter = locations.length
-		? { lat: locations[0].latitude, lng: locations[0].longitude }
+		? {
+				lat: locations[0].location.latitude,
+				lng: locations[0].location.longitude,
+		  }
 		: { lat: 32, lng: -70 };
 
 	return (
@@ -30,18 +33,25 @@ export const GoogleMaps = () => {
 			options={{
 				gestureHandling: 'greedy',
 				disableDefaultUI: true,
+				tilt: 45,
+				mapId: config.googleMapsAPIKey,
+				fullscreenControl: true,
+				mapTypeControl: true,
 			}}
 		>
 			{locations.length
 				? locations.map((location, index) => {
 						if (
-							location.latitude !== undefined &&
-							location.longitude !== undefined
+							location.location.latitude !== undefined &&
+							location.location.longitude !== undefined
 						) {
 							return (
 								<OverlayView
 									key={index}
-									position={{ lat: location.latitude, lng: location.longitude }}
+									position={{
+										lat: location.location.latitude,
+										lng: location.location.longitude,
+									}}
 									mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
 								>
 									<Flex

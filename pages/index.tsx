@@ -9,7 +9,6 @@ import {
 	Radio,
 	Link,
 	IconButton,
-	Box,
 } from '@chakra-ui/react';
 import { CopyIcon } from '@chakra-ui/icons';
 import TimePicker from '../components/pickers/time-picker';

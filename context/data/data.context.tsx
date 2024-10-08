@@ -62,9 +62,19 @@ interface IOrganization {
 }
 
 export interface ILocation {
-	device: IDevice;
 	latitude: number;
 	longitude: number;
+}
+
+export interface IDeviceLocation {
+	device: IDevice;
+	location: ILocation;
+}
+
+export interface IMapModal {
+	isShowing: boolean;
+	device?: IDevice;
+	locations?: ILocation[];
 }
 
 interface IDataContext {
@@ -82,10 +92,10 @@ interface IDataContext {
 	setSelectedSensors?: React.Dispatch<React.SetStateAction<ISensor[]>>;
 	sensorDataSets?: ISensorData[];
 	setSensorDataSets?: React.Dispatch<React.SetStateAction<ISensorData[]>>;
-	locations?: ILocation[];
-	setLocations?: React.Dispatch<React.SetStateAction<ILocation[]>>;
-	showMapModal?: boolean;
-	setShowMapModal?: React.Dispatch<React.SetStateAction<boolean>>;
+	locations?: IDeviceLocation[];
+	setLocations?: React.Dispatch<React.SetStateAction<IDeviceLocation[]>>;
+	showMapModal?: IMapModal;
+	setShowMapModal?: React.Dispatch<React.SetStateAction<IMapModal>>;
 }
 
 const DataContext = createContext<IDataContext>({});
@@ -112,9 +122,11 @@ export const DataProvider = ({ children }) => {
 
 	const sensorsCacheRef = useRef({});
 
-	const [locations, setLocations] = useState<ILocation[]>([]);
+	const [locations, setLocations] = useState<IDeviceLocation[]>([]);
 
-	const [showMapModal, setShowMapModal] = useState<boolean>(false);
+	const [showMapModal, setShowMapModal] = useState<IMapModal>({
+		isShowing: false,
+	});
 
 	useEffect(() => {
 		const fetchDeviceData = async () => {
@@ -190,8 +202,10 @@ export const DataProvider = ({ children }) => {
 				) {
 					const newLocation = {
 						device,
-						latitude: latestLocation.latitude,
-						longitude: latestLocation.longitude,
+						location: {
+							latitude: latestLocation.latitude,
+							longitude: latestLocation.longitude,
+						},
 					};
 
 					setLocations((prevLocations) =>
