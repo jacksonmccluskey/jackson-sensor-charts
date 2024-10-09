@@ -27,7 +27,7 @@ const getStatusIcon = (status: string) => {
 	);
 };
 
-const ParentComponent = () => {
+const DeviceTable = () => {
 	const columnsConfig = [
 		{ label: 'Comm ID', accessor: 'commId' },
 		{ label: 'Device Name', accessor: 'deviceName' },
@@ -42,7 +42,7 @@ const ParentComponent = () => {
 		columnsConfig.map((col) => col.accessor)
 	);
 	const [selectedRows, setSelectedRows] = useState<string[]>([]);
-	const [searchFilter, setSearchFilter] = useState('');
+	const [searchFilter, setSearchFilter] = useState<string>('');
 	const [sortOrder, setSortOrder] = useState({
 		column: 'lastTransmitDate',
 		ascending: false,
@@ -54,7 +54,13 @@ const ParentComponent = () => {
 
 	const filteredData = devices
 		.map((device) => {
-			return { ...device, status: getStatusIcon(device.status) };
+			return {
+				...device,
+				status: getStatusIcon(device.status),
+				lastTransmitDate: device.lastTransmitDate
+					.replace('T', ' ')
+					.replace('Z', ''),
+			};
 		})
 		.filter((row) =>
 			selectedColumns.some((col) =>
@@ -124,4 +130,4 @@ const ParentComponent = () => {
 	);
 };
 
-export default ParentComponent;
+export default DeviceTable;

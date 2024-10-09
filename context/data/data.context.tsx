@@ -21,6 +21,11 @@ export interface ILocation {
 	longitude: number;
 }
 
+export interface IGoogleLocation {
+	lat: number;
+	lng: number;
+}
+
 export interface IDevice {
 	id: string;
 	deviceId: string | number;
@@ -39,6 +44,7 @@ export interface IDevice {
 	longitude?: number;
 	gpsQuality?: number;
 	track?: ILocation[];
+	iconFileName?: string;
 }
 
 export interface ISensor {
@@ -76,7 +82,7 @@ interface IOrganization {
 export interface IMapModal {
 	isShowing: boolean;
 	device?: IDevice;
-	locations?: ILocation[];
+	track?: IGoogleLocation[];
 }
 
 interface IDataContext {

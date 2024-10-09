@@ -1,26 +1,66 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
 	GoogleMap,
 	useLoadScript,
 	OverlayView,
-	// Polyline,
+	Polyline,
 } from '@react-google-maps/api';
 import { config } from '../../config';
-import { IDevice, useDataContext } from '../../context/data/data.context';
+import {
+	IDevice,
+	IGoogleLocation,
+	useDataContext,
+} from '../../context/data/data.context';
 import buoyBase64 from '../../components/base64/buoy';
 import { Image, Flex, Text, Button } from '@chakra-ui/react';
+import { getTrack } from '../../api/track.api';
+import { getFormattedDate } from '../../helpers/get-formatted-date';
+import { useAuthContext } from '../../context/auth/auth.context';
 
 export const GoogleMaps = () => {
-	const { locations, setShowMapModal } = useDataContext();
+	const { jwt } = useAuthContext();
+	const { locations, setShowMapModal, timeRange, selectedDevices, devices } =
+		useDataContext();
 	const { isLoaded, loadError } = useLoadScript({
 		googleMapsApiKey: config.googleMapsAPIKey,
 	});
+	const [polylinePath, setPolylinePath] = useState<IGoogleLocation[]>([]);
+
+	useEffect(() => {
+		const getInitialTrack = async () => {
+			if (selectedDevices.length) {
+				const track = await getTrack({
+					jwt,
+					deviceIdList:
+						devices.find(
+							(device) =>
+								device.commId == selectedDevices[selectedDevices.length - 1]
+						).deviceId + '',
+					startDateTime: getFormattedDate(timeRange.startDate),
+					endDateTime: getFormattedDate(timeRange.endDate),
+				});
+				setPolylinePath(track);
+			}
+		};
+
+		getInitialTrack();
+	}, [selectedDevices]);
 
 	if (loadError) return <div>Error Loading Maps</div>;
 	if (!isLoaded) return <div>Loading Maps</div>;
 
-	const handleDeviceClick = (device: IDevice) => {
-		setShowMapModal({ isShowing: true, device });
+	const handleDeviceClick = async (device: IDevice) => {
+		const track = await getTrack({
+			jwt,
+			deviceIdList: device.deviceId,
+			startDateTime: getFormattedDate(timeRange.startDate),
+			endDateTime: getFormattedDate(timeRange.endDate),
+		});
+		setShowMapModal({
+			isShowing: true,
+			device,
+		});
+		setPolylinePath(track);
 	};
 
 	const mapCenter = locations.length
@@ -44,6 +84,17 @@ export const GoogleMaps = () => {
 				mapTypeControl: true,
 			}}
 		>
+			{polylinePath?.length > 1 && (
+				<Polyline
+					path={polylinePath}
+					options={{
+						geodesic: true,
+						strokeColor: '#FF0000',
+						strokeOpacity: 1.0,
+						strokeWeight: 2,
+					}}
+				/>
+			)}
 			{locations.length
 				? locations.map((location, index) => {
 						if (

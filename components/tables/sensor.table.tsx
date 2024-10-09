@@ -6,7 +6,8 @@ import { ISensor, useDataContext } from '../../context/data/data.context';
 import { Flex } from '@chakra-ui/react';
 
 const SensorTable = () => {
-	const { sensorSets, selectedSensors, setSelectedSensors } = useDataContext();
+	const { sensorSets, selectedSensors, setSelectedSensors, devices } =
+		useDataContext();
 
 	const [sortOrder, setSortOrder] = useState({
 		column: 'sensor',
@@ -25,7 +26,9 @@ const SensorTable = () => {
 			{sensorSets.map((sensorSet, index) => {
 				const { deviceTypeId, sensors } = sensorSet;
 
-				const deviceTypeName = `Device Type ${deviceTypeId}`;
+				const deviceTypeName = devices.find(
+					(device) => device.deviceTypeId == deviceTypeId
+				).deviceTypeName;
 
 				const columnsConfig = [{ label: deviceTypeName, accessor: 'sensor' }];
 

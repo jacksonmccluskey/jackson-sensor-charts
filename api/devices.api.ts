@@ -6,12 +6,18 @@ const convertDateStringToTimeAgo = (dateString: string): string => {
 	const now = new Date();
 	const diffInMs = now.getTime() - date.getTime();
 
+	const millsecondsInMinute = 60000;
 	const millisecondsInHour = 3600000;
 	const millisecondsInDay = 24 * millisecondsInHour;
 	const millisecondsInMonth = 30.5 * millisecondsInDay;
 	const millisecondsInYear = 365.25 * millisecondsInDay;
 
 	const diffInHours = Math.floor(diffInMs / millisecondsInHour);
+
+	if (diffInHours < 1) {
+		const diffInMinutes = Math.floor(diffInMs / millsecondsInMinute);
+		return `${diffInMinutes} minute${diffInMinutes == 1 ? '' : 's'} ago`;
+	}
 
 	if (diffInHours < 24) {
 		return `${diffInHours} hour${diffInHours == 1 ? '' : 's'} ago`;
@@ -86,6 +92,8 @@ export const fetchDevices = async ({
 						latitude: device.latitude,
 						longitude: device.longitude,
 						gpsQuality: device.gpsQuality,
+						deviceTypeName: device.deviceTypeName,
+						iconFileName: device.iconFileName,
 					};
 			  })
 			: ([] as IDevice[]);

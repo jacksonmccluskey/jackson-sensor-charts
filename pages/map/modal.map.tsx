@@ -48,7 +48,7 @@ export const MapModal = ({
 		});
 
 		setFormattedLocation(newFormattedLocation);
-	}, [coordinateFormat]);
+	}, [coordinateFormat, latitude, longitude]);
 
 	const batteryPercentage: number =
 		batteryVoltage && batteryVoltage > 0
@@ -154,8 +154,8 @@ export const MapModal = ({
 					style={{ maxHeight: '128px', maxWidth: '128px' }}
 				/>
 				<Gauge
-					min={-99}
-					max={99}
+					min={-55}
+					max={55}
 					value={temperature}
 					style={{ height: '128px', width: '128px' }}
 				/>

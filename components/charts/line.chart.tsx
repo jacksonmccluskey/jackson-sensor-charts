@@ -37,25 +37,13 @@ const LineChartComponent = ({
 					backgroundColor: colorScheme[index % colorScheme.length] + '0.33)',
 					borderColor: colorScheme[index % colorScheme.length] + '1)',
 					fill: false,
-					pointRadius: 4,
+					pointRadius: 0,
 					tension: 0.1,
 				};
 			});
 			return datasets;
 		}
 		return [];
-	};
-
-	const getTimeUnit = () => {
-		const diffInMs =
-			new Date(endDate).getTime() - new Date(startDate).getTime();
-		const days = diffInMs / (1000 * 60 * 60 * 24);
-
-		if (days < 1) return 'hour';
-		if (days < 14) return 'day';
-		if (days < 70) return 'week';
-		if (days < 420) return 'month';
-		return 'year';
 	};
 
 	const initChart = () => {
@@ -101,7 +89,6 @@ const LineChartComponent = ({
 					x: {
 						type: 'time',
 						time: {
-							unit: getTimeUnit(),
 							displayFormats: {
 								hour: 'HH:mm',
 								day: 'MMM d',

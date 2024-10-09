@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
 	Flex,
 	Table,
@@ -8,8 +8,10 @@ import {
 	Th,
 	Td,
 	Checkbox,
+	Icon,
 } from '@chakra-ui/react';
 import { ChevronUpIcon, ChevronDownIcon } from '@chakra-ui/icons';
+import TableHelperModal from '../modals/table-helper.modal';
 
 const DynamicTable = ({
 	columnsConfig,
@@ -26,8 +28,18 @@ const DynamicTable = ({
 		if (onSelectRow) onSelectRow(id);
 	};
 
-	const allRowsSelected = data.every((row) => selectedRows.includes(row.id));
-	const someRowsSelected = data.some((row) => selectedRows.includes(row.id));
+	const [showHelperModal, setShowHelperModal] = useState(false);
+
+	const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+	const handleMouseEnter = (e) => {
+		setMousePosition({ x: e.clientX, y: e.clientY });
+		setShowHelperModal(true);
+	};
+
+	const handleMouseLeave = () => {
+		setShowHelperModal(false);
+	};
 
 	return (
 		<Flex
@@ -42,11 +54,12 @@ const DynamicTable = ({
 					<Tr>
 						{onSelectAllRows && (
 							<Th>
-								<Checkbox
-									isChecked={allRowsSelected}
-									isIndeterminate={!allRowsSelected && someRowsSelected}
-									onChange={onSelectAllRows}
-									borderColor='black'
+								<Icon
+									onMouseEnter={handleMouseEnter}
+									onMouseLeave={handleMouseLeave}
+									name='question'
+									width='16px'
+									height='16px'
 								/>
 							</Th>
 						)}
@@ -104,6 +117,14 @@ const DynamicTable = ({
 					))}
 				</Tbody>
 			</Table>
+			<TableHelperModal
+				showHelperModal={showHelperModal}
+				styles={{
+					position: 'fixed',
+					top: mousePosition.y + 16,
+					left: mousePosition.x + 16,
+				}}
+			/>
 		</Flex>
 	);
 };
