@@ -17,4 +17,5 @@ export const config = {
 	ordIdTester: process.env.NEXT_PUBLIC_ORD_ID_TESTER
 		? parseInt(process.env.NEXT_PUBLIC_ORD_ID_TESTER)
 		: null,
+	localIconPath: process.env.NEXT_PUBLIC_LOCAL_ICON_PATH,
 };

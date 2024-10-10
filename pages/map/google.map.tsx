@@ -11,8 +11,8 @@ import {
 	IGoogleLocation,
 	useDataContext,
 } from '../../context/data/data.context';
-import buoyBase64 from '../../components/base64/buoy';
-import { Image, Flex, Text, Button } from '@chakra-ui/react';
+// import buoyBase64 from '../../components/base64/buoy';
+import { Image, Flex, Text, Button, Circle } from '@chakra-ui/react';
 import { getTrack } from '../../api/track.api';
 import { getFormattedDate } from '../../helpers/get-formatted-date';
 import { useAuthContext } from '../../context/auth/auth.context';
@@ -166,7 +166,24 @@ export const GoogleMaps = () => {
 												backgroundColor: 'transparent',
 											}}
 										>
-											<Image src={buoyBase64} width='32px' height='32px' />
+											{location.iconFileName ? (
+												<Image
+													src={(() => {
+														console.log(
+															config.localIconPath +
+																(location.iconFileName ?? 'buoy-icon.png')
+														);
+														return (
+															config.localIconPath +
+															(location.iconFileName ?? 'buoy-icon.png')
+														);
+													})()}
+													width='24px'
+													height='24px'
+												/>
+											) : (
+												<Circle size='24px' backgroundColor='brand.white' />
+											)}
 										</Button>
 										<Text
 											fontSize='12px'

@@ -23,51 +23,47 @@ export const Map = () => {
 			width='100%'
 			position='relative'
 		>
-			<LoadingSkeleton isLoading={isMapLoading}>
-				<GoogleMaps />
-			</LoadingSkeleton>
-			<LoadingSkeleton isLoading={isTrackLoading}>
-				{isShowing && (
-					<Flex
+			<GoogleMaps />
+			{isShowing && (
+				<Flex
+					position='absolute'
+					top='0'
+					left='0'
+					backgroundColor='rgba(255, 255, 255, 1)'
+					width='100%'
+					height='360px'
+					justifyContent='center'
+					alignItems='center'
+					zIndex={2}
+				>
+					<Button
 						position='absolute'
-						top='0'
-						left='0'
-						backgroundColor='rgba(255, 255, 255, 1)'
-						width='100%'
-						height='360px'
-						justifyContent='center'
-						alignItems='center'
-						zIndex={2}
+						top='16px'
+						right='16px'
+						onClick={() => setShowMapModal({ isShowing: false })}
+						backgroundColor='transparent'
+						_hover={{
+							backgroundColor: 'transparent',
+						}}
+						height='24px'
+						width='24px'
+						zIndex={3}
 					>
-						<Button
-							position='absolute'
-							top='16px'
-							right='16px'
-							onClick={() => setShowMapModal({ isShowing: false })}
-							backgroundColor='transparent'
-							_hover={{
-								backgroundColor: 'transparent',
-							}}
-							height='24px'
-							width='24px'
-							zIndex={3}
-						>
-							<Text color='brand.black'>X</Text>
-						</Button>
-						<MapModal
-							deviceTypeName={device.deviceTypeName}
-							deviceName={device.deviceName}
-							commId={device.commId}
-							dateTimeUTC={device.lastTransmitDate}
-							latitude={device.latitude}
-							longitude={device.longitude}
-							gpsQuality={device.gpsQuality}
-							temperature={device.temperature}
-							batteryVoltage={device.batteryVoltage}
-						/>
-					</Flex>
-				)}
-			</LoadingSkeleton>
+						<Text color='brand.black'>X</Text>
+					</Button>
+					<MapModal
+						deviceTypeName={device.deviceTypeName}
+						deviceName={device.deviceName}
+						commId={device.commId}
+						dateTimeUTC={device.lastTransmitDate}
+						latitude={device.latitude}
+						longitude={device.longitude}
+						gpsQuality={device.gpsQuality}
+						temperature={device.temperature}
+						batteryVoltage={device.batteryVoltage}
+					/>
+				</Flex>
+			)}
 		</Flex>
 	);
 };
