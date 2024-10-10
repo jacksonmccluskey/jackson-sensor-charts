@@ -28,11 +28,29 @@ export const GoogleMaps = () => {
 		isMapLoading,
 		isTrackLoading,
 		setIsTrackLoading,
+		showMapModal,
 	} = useDataContext();
 	const { isLoaded, loadError } = useLoadScript({
 		googleMapsApiKey: config.googleMapsAPIKey,
 	});
 	const [polylinePath, setPolylinePath] = useState<IGoogleLocation[]>([]);
+
+	const [mapCenter, setMapCenter] = useState<IGoogleLocation>({
+		lat: 0,
+		lng: 0,
+	});
+
+	const getMapCenter = () => {
+		setMapCenter((prev) =>
+			(showMapModal?.device?.latitude && showMapModal?.device?.longitude) ||
+			locations.length
+				? {
+						lat: showMapModal?.device?.latitude ?? locations[0].latitude ?? 0,
+						lng: showMapModal?.device?.latitude ?? locations[0].longitude ?? 0,
+				  }
+				: prev
+		);
+	};
 
 	useEffect(() => {
 		const getInitialTrack = async () => {
@@ -69,6 +87,7 @@ export const GoogleMaps = () => {
 
 	const handleDeviceClick = async (device: IDevice) => {
 		if (!isMapLoading && !isTrackLoading) {
+			getMapCenter();
 			setIsTrackLoading(true);
 
 			const track = await getTrack({
@@ -87,13 +106,6 @@ export const GoogleMaps = () => {
 			setPolylinePath([]);
 		}
 	};
-
-	const mapCenter = locations.length
-		? {
-				lat: locations[0].latitude,
-				lng: locations[0].longitude,
-		  }
-		: { lat: 32, lng: -70 };
 
 	return (
 		<GoogleMap
@@ -145,7 +157,9 @@ export const GoogleMaps = () => {
 										left='-32px'
 									>
 										<Button
-											onClick={() => handleDeviceClick(location)}
+											onClick={() => {
+												if (!isMapLoading) handleDeviceClick(location);
+											}}
 											aria-label={location.deviceName}
 											backgroundColor='transparent'
 											_hover={{

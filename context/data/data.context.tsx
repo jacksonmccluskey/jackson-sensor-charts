@@ -170,6 +170,30 @@ export const DataProvider = ({ children }) => {
 		}
 	}, [devices]);
 
+	const getLatestLocations = async () => {
+		if (selectedDevices.length) {
+			setIsMapLoading(true);
+
+			const selectedDeviceObjects = selectedDevices.map((selectedDevice) => {
+				return devices.find((device) => device.commId == selectedDevice);
+			});
+
+			const updatedDevices: IDevice[] = await getLocations({
+				deviceIdList: selectedDeviceObjects.map(
+					(selectedDeviceObject) => selectedDeviceObject.deviceId + ''
+				),
+				timeRange,
+				jwt,
+				devices: selectedDeviceObjects,
+			});
+
+			setLocations(updatedDevices);
+		} else {
+			setLocations([]);
+			setShowMapModal({ isShowing: false });
+		}
+	};
+
 	useEffect(() => {
 		const updateSensorSets = async () => {
 			if (selectedDevices.length) {
@@ -227,33 +251,11 @@ export const DataProvider = ({ children }) => {
 		};
 
 		updateSensorSets();
-
-		const getLatestLocations = async () => {
-			if (selectedDevices.length) {
-				setIsMapLoading(true);
-
-				const selectedDeviceObjects = selectedDevices.map((selectedDevice) => {
-					return devices.find((device) => device.commId == selectedDevice);
-				});
-
-				const updatedDevices: IDevice[] = await getLocations({
-					deviceIdList: selectedDeviceObjects.map(
-						(selectedDeviceObject) => selectedDeviceObject.deviceId + ''
-					),
-					timeRange,
-					jwt,
-					devices: selectedDeviceObjects,
-				});
-
-				setLocations(updatedDevices);
-			} else {
-				setLocations([]);
-				setShowMapModal({ isShowing: false });
-			}
-		};
-
-		getLatestLocations();
 	}, [selectedDevices]);
+
+	useEffect(() => {
+		getLatestLocations();
+	}, [selectedDevices, timeRange]);
 
 	useEffect(() => {
 		if (sensorSets.length) {
