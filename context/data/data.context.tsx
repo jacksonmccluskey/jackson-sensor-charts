@@ -104,6 +104,16 @@ interface IDataContext {
 	setShowMapModal?: React.Dispatch<React.SetStateAction<IMapModal>>;
 	locations?: IDevice[];
 	setLocations?: React.Dispatch<React.SetStateAction<IDevice[]>>;
+	isDevicesLoading?: boolean;
+	setIsDevicesLoading?: React.Dispatch<React.SetStateAction<boolean>>;
+	isSensorsLoading?: boolean;
+	setIsSensorsLoading?: React.Dispatch<React.SetStateAction<boolean>>;
+	isMapLoading?: boolean;
+	setIsMapLoading?: React.Dispatch<React.SetStateAction<boolean>>;
+	isChartsLoading?: boolean;
+	setIsChartsLoading?: React.Dispatch<React.SetStateAction<boolean>>;
+	isTrackLoading?: boolean;
+	setIsTrackLoading?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const DataContext = createContext<IDataContext>({});
@@ -136,11 +146,17 @@ export const DataProvider = ({ children }) => {
 
 	const [locations, setLocations] = useState<IDevice[]>([]);
 
+	const [isDevicesLoading, setIsDevicesLoading] = useState<boolean>(false);
+	const [isSensorsLoading, setIsSensorsLoading] = useState<boolean>(false);
+	const [isMapLoading, setIsMapLoading] = useState<boolean>(false);
+	const [isChartsLoading, setIsChartsLoading] = useState<boolean>(false);
+	const [isTrackLoading, setIsTrackLoading] = useState<boolean>(false);
+
 	useEffect(() => {
 		const fetchDeviceData = async () => {
 			if (jwt && orgId) {
+				setIsDevicesLoading(true);
 				const fetchedDevices = await fetchDevices({ jwt, orgId });
-
 				setDevices(fetchedDevices);
 			}
 		};
@@ -149,83 +165,90 @@ export const DataProvider = ({ children }) => {
 	}, [jwt, orgId]);
 
 	useEffect(() => {
+		if (devices.length) {
+			setIsDevicesLoading(false);
+		}
+	}, [devices]);
+
+	useEffect(() => {
 		const updateSensorSets = async () => {
-			const selectedDevicesDetails = devices.filter((device) =>
-				selectedDevices.includes(device.commId)
-			);
+			if (selectedDevices.length) {
+				setIsSensorsLoading(true);
 
-			const deviceTypeIdsSet = new Set(
-				selectedDevicesDetails.map((device) => device.deviceTypeId)
-			);
-
-			const deviceTypeIds = Array.from(deviceTypeIdsSet);
-
-			const deviceTypeIdsToFetch = deviceTypeIds.filter(
-				(deviceTypeId) => !(deviceTypeId in sensorsCacheRef.current)
-			);
-
-			if (deviceTypeIdsToFetch.length > 0) {
-				await Promise.all(
-					deviceTypeIdsToFetch.map(async (deviceTypeId) => {
-						const deviceInQuestion = devices.find((device) => {
-							return device.deviceTypeId == deviceTypeId;
-						});
-
-						if (!!deviceInQuestion && deviceInQuestion.deviceId !== undefined) {
-							const deviceId = deviceInQuestion.deviceId;
-							const sensors = await fetchSensors({ jwt, deviceId });
-							sensorsCacheRef.current[deviceTypeId] = sensors;
-
-							const updatedSensorSets = deviceTypeIds.map((deviceTypeId) => ({
-								deviceTypeId,
-								sensors: sensorsCacheRef.current[deviceTypeId],
-							}));
-
-							setSensorSets(updatedSensorSets);
-						}
-					})
+				const selectedDevicesDetails = devices.filter((device) =>
+					selectedDevices.includes(device.commId)
 				);
+
+				const deviceTypeIdsSet = new Set(
+					selectedDevicesDetails.map((device) => device.deviceTypeId)
+				);
+
+				const deviceTypeIds = Array.from(deviceTypeIdsSet);
+
+				const deviceTypeIdsToFetch = deviceTypeIds.filter(
+					(deviceTypeId) => !(deviceTypeId in sensorsCacheRef.current)
+				);
+
+				if (deviceTypeIdsToFetch.length > 0) {
+					await Promise.all(
+						deviceTypeIdsToFetch.map(async (deviceTypeId) => {
+							const deviceInQuestion = devices.find((device) => {
+								return device.deviceTypeId == deviceTypeId;
+							});
+
+							if (
+								!!deviceInQuestion &&
+								deviceInQuestion.deviceId !== undefined
+							) {
+								const deviceId = deviceInQuestion.deviceId;
+								const sensors = await fetchSensors({ jwt, deviceId });
+								sensorsCacheRef.current[deviceTypeId] = sensors;
+
+								const updatedSensorSets = deviceTypeIds.map((deviceTypeId) => ({
+									deviceTypeId,
+									sensors: sensorsCacheRef.current[deviceTypeId],
+								}));
+
+								setSensorSets(updatedSensorSets);
+							}
+						})
+					);
+				}
+
+				const updatedSensorSets = deviceTypeIds.map((deviceTypeId) => ({
+					deviceTypeId,
+					sensors: sensorsCacheRef.current[deviceTypeId],
+				}));
+
+				setSensorSets(updatedSensorSets);
+			} else {
+				setSensorSets([]);
 			}
 		};
 
 		updateSensorSets();
 
 		const getLatestLocations = async () => {
-			const selectedDeviceObjects = selectedDevices.map((selectedDevice) => {
-				return devices.find((device) => device.commId == selectedDevice);
-			});
+			if (selectedDevices.length) {
+				setIsMapLoading(true);
 
-			let deviceIndex = 0;
-
-			for (const device of selectedDeviceObjects) {
-				const latestLocation = await getLocations({
-					deviceId: device.deviceId,
-					timeRange,
-					jwt,
+				const selectedDeviceObjects = selectedDevices.map((selectedDevice) => {
+					return devices.find((device) => device.commId == selectedDevice);
 				});
 
-				if (
-					latestLocation.latitude !== undefined &&
-					latestLocation.longitude !== undefined
-				) {
-					const updatedDevice: IDevice = {
-						...device,
-						temperature: latestLocation.temperature,
-						deviceTypeName: latestLocation.deviceTypeName,
-						batteryVoltage: latestLocation.batteryVoltage,
-						latitude: latestLocation.latitude,
-						longitude: latestLocation.longitude,
-						gpsQuality: latestLocation.gpsQuality,
-					};
+				const updatedDevices: IDevice[] = await getLocations({
+					deviceIdList: selectedDeviceObjects.map(
+						(selectedDeviceObject) => selectedDeviceObject.deviceId + ''
+					),
+					timeRange,
+					jwt,
+					devices: selectedDeviceObjects,
+				});
 
-					setLocations((prevLocations) =>
-						deviceIndex > 0
-							? [...prevLocations, updatedDevice]
-							: [updatedDevice]
-					);
-
-					deviceIndex++;
-				}
+				setLocations(updatedDevices);
+			} else {
+				setLocations([]);
+				setShowMapModal({ isShowing: false });
 			}
 		};
 
@@ -233,59 +256,16 @@ export const DataProvider = ({ children }) => {
 	}, [selectedDevices]);
 
 	useEffect(() => {
-		const handleGetData = async () => {
-			if (selectedSensors.length && selectedDevices.length) {
-				const newSensorDataSets: ISensorData[] = [];
-				for (const selectedSensor of selectedSensors) {
-					const currentDeviceDataSets: IDeviceData[] = [];
-					for (const selectedDevice of selectedDevices) {
-						const device = devices.find(
-							(device) => device.commId === selectedDevice
-						);
+		if (sensorSets.length) {
+			setIsSensorsLoading(false);
+		}
+	}, [sensorSets]);
 
-						if (!device) {
-							continue;
-						}
-
-						const deviceId = device.deviceId;
-
-						try {
-							const { data } = await getData({
-								timeRange,
-								deviceId,
-								sensor: selectedSensor.dataFieldName,
-								jwt,
-							});
-
-							if (data) {
-								currentDeviceDataSets.push({
-									deviceId: data.deviceId,
-									deviceName: data.deviceName,
-									transmissions: data.transmissions.map(
-										(transmission: any) => ({
-											time: transmission.time,
-											value: transmission.value,
-										})
-									),
-								});
-							}
-						} catch {}
-					}
-
-					newSensorDataSets.push({
-						sensorName: selectedSensor.displayName,
-						deviceDataSets: currentDeviceDataSets,
-					});
-				}
-
-				setSensorDataSets(newSensorDataSets);
-			} else {
-				setSensorDataSets([]);
-			}
-		};
-
-		handleGetData();
-	}, [timeRange, selectedDevices, selectedSensors]);
+	useEffect(() => {
+		if (locations.length) {
+			setIsMapLoading(false);
+		}
+	}, [locations]);
 
 	useEffect(() => {
 		const allSensors = sensorSets.flatMap((sensorSet) => sensorSet.sensors);
@@ -297,6 +277,70 @@ export const DataProvider = ({ children }) => {
 			)
 		);
 	}, [sensorSets]);
+
+	useEffect(() => {
+		const handleGetData = async () => {
+			if (selectedSensors.length) {
+				if (selectedSensors.length && selectedDevices.length) {
+					const newSensorDataSets: ISensorData[] = [];
+					for (const selectedSensor of selectedSensors) {
+						const currentDeviceDataSets: IDeviceData[] = [];
+						for (const selectedDevice of selectedDevices) {
+							const device = devices.find(
+								(device) => device.commId === selectedDevice
+							);
+
+							if (!device) {
+								continue;
+							}
+
+							const deviceId = device.deviceId;
+
+							try {
+								setIsChartsLoading(true);
+								const { data } = await getData({
+									timeRange,
+									deviceId,
+									sensor: selectedSensor.dataFieldName,
+									jwt,
+								});
+
+								if (data) {
+									currentDeviceDataSets.push({
+										deviceId: data.deviceId,
+										deviceName: data.deviceName,
+										transmissions: data.transmissions.map(
+											(transmission: any) => ({
+												time: transmission.time,
+												value: transmission.value,
+											})
+										),
+									});
+								}
+							} catch {}
+						}
+
+						newSensorDataSets.push({
+							sensorName: selectedSensor.displayName,
+							deviceDataSets: currentDeviceDataSets,
+						});
+					}
+
+					setSensorDataSets(newSensorDataSets);
+				} else {
+					setSensorDataSets([]);
+				}
+			}
+		};
+
+		handleGetData();
+	}, [timeRange, selectedDevices, selectedSensors]);
+
+	useEffect(() => {
+		if (sensorDataSets.length >= selectedSensors.length) {
+			setIsChartsLoading(false);
+		}
+	}, [sensorDataSets]);
 
 	return (
 		<DataContext.Provider
@@ -317,6 +361,16 @@ export const DataProvider = ({ children }) => {
 				setLocations,
 				showMapModal,
 				setShowMapModal,
+				isDevicesLoading,
+				setIsDevicesLoading,
+				isSensorsLoading,
+				setIsSensorsLoading,
+				isMapLoading,
+				setIsMapLoading,
+				isChartsLoading,
+				setIsChartsLoading,
+				isTrackLoading,
+				setIsTrackLoading,
 			}}
 		>
 			{children}

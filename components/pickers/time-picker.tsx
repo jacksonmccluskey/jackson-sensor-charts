@@ -187,7 +187,7 @@ const TimePicker = () => {
 							popperPlacement='bottom-start'
 						/>
 					</Box>
-					<Box marginLeft='16px'>
+					<Box marginLeft='16px' zIndex={100}>
 						<Text color='brand.black' marginBottom='8px'>
 							To
 						</Text>

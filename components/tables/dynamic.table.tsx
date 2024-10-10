@@ -18,11 +18,11 @@ const DynamicTable = ({
 	data,
 	selectedRows = [],
 	onSelectRow = null,
-	onSelectAllRows = null,
 	sortOrder = null,
 	onSort = null,
 	handleCheckboxClick = null,
 	styles = {},
+	isLoading,
 }) => {
 	const handleRowClick = (id) => {
 		if (onSelectRow) onSelectRow(id);
@@ -46,27 +46,33 @@ const DynamicTable = ({
 			width='100%'
 			height='100%'
 			flexDirection='column'
-			overflowX='auto'
+			overflow='auto'
 			{...styles}
 		>
-			<Table size='sm' width='100%'>
-				<Thead position='sticky' top={0} zIndex='docked' bg='white'>
+			<Table size='sm' width='100%' backgroundColor='brand.white'>
+				<Thead
+					position='sticky'
+					top={0}
+					backgroundColor='brand.white'
+					zIndex={1}
+				>
 					<Tr>
-						{onSelectAllRows && (
-							<Th>
-								<Icon
-									onMouseEnter={handleMouseEnter}
-									onMouseLeave={handleMouseLeave}
-									name='question'
-									width='16px'
-									height='16px'
-								/>
-							</Th>
-						)}
+						<Th maxWidth='fit-content'>
+							<Icon
+								onMouseEnter={handleMouseEnter}
+								onMouseLeave={handleMouseLeave}
+								name='question'
+								width='16px'
+								height='16px'
+								backgroundColor='brand.white'
+							/>
+						</Th>
 						{columnsConfig.map((col) => (
 							<Th
 								key={col.accessor}
-								onClick={() => (onSort ? onSort(col.accessor) : null)}
+								onClick={() =>
+									onSort && !isLoading ? onSort(col.accessor) : null
+								}
 								cursor='pointer'
 								whiteSpace='nowrap'
 								color='brand.black'
@@ -83,23 +89,32 @@ const DynamicTable = ({
 						))}
 					</Tr>
 				</Thead>
-				<Tbody overflowY='auto'>
+				<Tbody overflowY='auto' maxHeight='100%'>
 					{data.map((row, index) => (
 						<Tr
 							key={row.id + index}
 							cursor='pointer'
 							bg={selectedRows.includes(row.id) ? 'brand.base' : 'transparent'}
-							onClick={() => handleRowClick(row.id)}
+							onClick={() => {
+								if (!isLoading) handleRowClick(row.id);
+							}}
 						>
 							{handleCheckboxClick && selectedRows && (
-								<Td onClick={(e) => e.stopPropagation()}>
+								<Td
+									width='40px'
+									padding='0'
+									textAlign='center'
+									onClick={(e) => e.stopPropagation()}
+								>
 									<Checkbox
 										isChecked={selectedRows.includes(row.id)}
 										onChange={(e) => {
 											e.stopPropagation();
-											handleCheckboxClick(e, row.id);
+											if (!isLoading) handleCheckboxClick(e, row.id);
 										}}
 										borderColor='black'
+										size='md'
+										margin='auto'
 									/>
 								</Td>
 							)}

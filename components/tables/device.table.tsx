@@ -3,6 +3,7 @@ import DynamicTable from './dynamic.table';
 import { Icon } from '@chakra-ui/react';
 import { FaWifi } from 'react-icons/fa';
 import { useDataContext } from '../../context/data/data.context';
+import LoadingSkeleton from '../modals/loading-skeleton.modal';
 
 const getStatusIcon = (status: string) => {
 	const statusColors = {
@@ -36,7 +37,7 @@ const DeviceTable = () => {
 		{ label: 'Status', accessor: 'status' },
 	];
 
-	const { devices, setSelectedDevices } = useDataContext();
+	const { devices, setSelectedDevices, isDevicesLoading } = useDataContext();
 
 	const [selectedColumns, setSelectedColumns] = useState(
 		columnsConfig.map((col) => col.accessor)
@@ -86,47 +87,47 @@ const DeviceTable = () => {
 		});
 
 	const handleSelectRow = async (deviceId) => {
-		setSelectedRows((prev) => {
-			return prev == deviceId && prev.length == 1 ? [] : [deviceId];
-		});
+		if (!isDevicesLoading) {
+			setSelectedRows((prev) => {
+				return prev == deviceId && prev.length == 1 ? [] : [deviceId];
+			});
+		}
 	};
 
 	const handleCheckboxClick = async (e, deviceId) => {
-		e.stopPropagation();
+		if (!isDevicesLoading) {
+			e.stopPropagation();
 
-		setSelectedRows((prev) =>
-			prev.includes(deviceId)
-				? prev.filter((rowId) => rowId !== deviceId)
-				: [...prev, deviceId]
-		);
-	};
-
-	const handleSelectAllRows = () => {
-		setSelectedRows((prev) =>
-			prev.length === devices.length
-				? []
-				: devices.map((device) => device.commId + '')
-		);
+			setSelectedRows((prev) =>
+				prev.includes(deviceId)
+					? prev.filter((rowId) => rowId !== deviceId)
+					: [...prev, deviceId]
+			);
+		}
 	};
 
 	const handleSort = (column) => {
-		setSortOrder((prev) => ({
-			column,
-			ascending: prev.column === column ? !prev.ascending : true,
-		}));
+		if (!isDevicesLoading) {
+			setSortOrder((prev) => ({
+				column,
+				ascending: prev.column === column ? !prev.ascending : true,
+			}));
+		}
 	};
 
 	return (
-		<DynamicTable
-			columnsConfig={columnsConfig}
-			data={filteredData}
-			selectedRows={selectedRows}
-			onSelectRow={handleSelectRow}
-			onSelectAllRows={handleSelectAllRows}
-			sortOrder={sortOrder}
-			onSort={handleSort}
-			handleCheckboxClick={handleCheckboxClick}
-		/>
+		<LoadingSkeleton isLoading={isDevicesLoading}>
+			<DynamicTable
+				columnsConfig={columnsConfig}
+				data={filteredData}
+				selectedRows={selectedRows}
+				onSelectRow={handleSelectRow}
+				sortOrder={sortOrder}
+				onSort={handleSort}
+				handleCheckboxClick={handleCheckboxClick}
+				isLoading={isDevicesLoading}
+			/>
+		</LoadingSkeleton>
 	);
 };
 

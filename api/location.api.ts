@@ -1,23 +1,23 @@
 import { config } from '../config';
+import { IDevice, ITimeRange } from '../context/data/data.context';
 
 export const getLocations = async ({
-	deviceId,
+	deviceIdList,
 	timeRange,
 	jwt,
-}): Promise<{
-	latitude?: number;
-	longitude?: number;
-	temperature?: number;
-	deviceTypeName?: string;
-	batteryVoltage?: number;
-	gpsQuality?: number;
-}> => {
+	devices,
+}: {
+	deviceIdList: string[];
+	timeRange: ITimeRange;
+	jwt: string;
+	devices: IDevice[];
+}): Promise<IDevice[]> => {
 	try {
 		const locationResponse = await fetch(
 			config.internalAPIURL + config.locationEndpoint,
 			{
 				body: JSON.stringify({
-					deviceIdList: deviceId,
+					deviceIdList: deviceIdList.join(','),
 					startDateTime: timeRange.startDate,
 					endDateTime: timeRange.endDate,
 				}),
@@ -33,16 +33,20 @@ export const getLocations = async ({
 
 		const { data } = locationResponseJSON;
 
-		if (data.length)
-			return {
-				latitude: data[0].latitude,
-				longitude: data[0].longitude,
-				temperature: data[0].sst,
-				deviceTypeName: data[0].deviceTypeName,
-				batteryVoltage: data[0].battVoltage,
-				gpsQuality: data[0].gpsQuality,
-			};
+		return data.length
+			? data.map((location) => {
+					return {
+						...devices.find((device) => device.deviceId == location.deviceId),
+						latitude: location.latitude,
+						longitude: location.longitude,
+						temperature: location.sst,
+						deviceTypeName: location.deviceTypeName,
+						batteryVoltage: location.battVoltage,
+						gpsQuality: location.gpsQuality,
+					};
+			  })
+			: [];
 	} catch {}
 
-	return {};
+	return devices;
 };

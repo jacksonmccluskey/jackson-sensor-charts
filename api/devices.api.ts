@@ -71,8 +71,6 @@ export const fetchDevices = async ({
 
 		const { data } = await deviceResponse.json();
 
-		console.log(JSON.stringify(data));
-
 		const devices: IDevice[] = Array.isArray(data)
 			? data.map((device) => {
 					return {

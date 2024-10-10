@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import Chart from 'chart.js/auto';
 import 'chartjs-adapter-date-fns';
+import { useDataContext } from '../../context/data/data.context';
+import LoadingSkeleton from '../modals/loading-skeleton.modal';
 
 const LineChartComponent = ({
 	startDate,
@@ -9,6 +11,8 @@ const LineChartComponent = ({
 	dataSets,
 	sensorName,
 }) => {
+	const { isChartsLoading } = useDataContext();
+
 	const [chartInstance, setChartInstance] = useState(null);
 	const colorScheme = [
 		'rgba(137, 207, 240, ',
@@ -135,10 +139,12 @@ const LineChartComponent = ({
 	}, [startDate, endDate, dataSets, sensorName]);
 
 	return (
-		<canvas
-			id={`lineChart-${chartId}`}
-			style={{ maxWidth: '100%', marginBottom: '32px' }}
-		/>
+		<LoadingSkeleton isLoading={isChartsLoading}>
+			<canvas
+				id={`lineChart-${chartId}`}
+				style={{ maxWidth: '100%', marginBottom: '32px' }}
+			/>
+		</LoadingSkeleton>
 	);
 };
 

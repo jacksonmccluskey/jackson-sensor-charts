@@ -2,6 +2,7 @@ import { Button, Flex, Text } from '@chakra-ui/react';
 import dynamic from 'next/dynamic';
 import { useDataContext } from '../../context/data/data.context';
 import { MapModal } from './modal.map';
+import LoadingSkeleton from '../../components/modals/loading-skeleton.modal';
 
 const GoogleMaps = dynamic(() => import('./google.map'), {
 	ssr: false,
@@ -11,6 +12,7 @@ export const Map = () => {
 	const {
 		showMapModal: { isShowing, device },
 		setShowMapModal,
+		isTrackLoading,
 	} = useDataContext();
 
 	return (
@@ -20,7 +22,9 @@ export const Map = () => {
 			width='100%'
 			position='relative'
 		>
-			<GoogleMaps />
+			<LoadingSkeleton isLoading={isTrackLoading}>
+				<GoogleMaps />
+			</LoadingSkeleton>
 			{isShowing && (
 				<Flex
 					position='absolute'

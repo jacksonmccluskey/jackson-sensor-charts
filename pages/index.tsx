@@ -15,7 +15,6 @@ import TimePicker from '../components/pickers/time-picker';
 import DeviceTable from '../components/tables/device.table';
 import SensorTable from '../components/tables/sensor.table';
 import LineChart from '../components/charts/line.chart';
-import Earth from './earth';
 import Map from './map';
 import { getCustomerAPIURL } from '../api/customer.api';
 import {
@@ -208,12 +207,12 @@ export default function Home() {
 			backgroundColor='brand.2'
 		>
 			<Flex
-				flex='1'
+				flex={1}
 				flexDirection={isMobile ? 'column' : 'row'}
 				height='calc(100vh - 64px)'
 			>
 				<Flex
-					flex='1'
+					flex={1}
 					flexDirection='column'
 					height='100%'
 					padding='16px'
@@ -221,7 +220,7 @@ export default function Home() {
 					maxWidth='50%'
 				>
 					<Flex
-						flex='1'
+						flex={1}
 						bg='white'
 						borderRadius='8px'
 						padding='16px'
@@ -238,13 +237,12 @@ export default function Home() {
 						<TimePicker />
 					</Flex>
 					<Flex
-						flex='1'
+						flex={1}
 						bg='white'
 						borderRadius='8px'
 						padding='16px'
 						flexDirection='column'
-						height='100%'
-						overflow='auto'
+						overflow='hidden'
 					>
 						<Text
 							fontSize='lg'
@@ -258,13 +256,12 @@ export default function Home() {
 						<DeviceTable />
 					</Flex>
 					<Flex
-						flex='1'
+						flex={1}
 						bg='white'
 						borderRadius='8px'
 						padding='16px'
 						flexDirection='column'
-						height='100%'
-						overflow='auto'
+						overflow='hidden'
 					>
 						<Text
 							fontSize='lg'

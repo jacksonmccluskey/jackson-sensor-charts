@@ -19,8 +19,16 @@ import { useAuthContext } from '../../context/auth/auth.context';
 
 export const GoogleMaps = () => {
 	const { jwt } = useAuthContext();
-	const { locations, setShowMapModal, timeRange, selectedDevices, devices } =
-		useDataContext();
+	const {
+		locations,
+		setShowMapModal,
+		timeRange,
+		selectedDevices,
+		devices,
+		isMapLoading,
+		isTrackLoading,
+		setIsTrackLoading,
+	} = useDataContext();
 	const { isLoaded, loadError } = useLoadScript({
 		googleMapsApiKey: config.googleMapsAPIKey,
 	});
@@ -29,6 +37,8 @@ export const GoogleMaps = () => {
 	useEffect(() => {
 		const getInitialTrack = async () => {
 			if (selectedDevices.length) {
+				setIsTrackLoading(true);
+
 				const track = await getTrack({
 					jwt,
 					deviceIdList:
@@ -40,27 +50,42 @@ export const GoogleMaps = () => {
 					endDateTime: getFormattedDate(timeRange.endDate),
 				});
 				setPolylinePath(track);
+			} else {
+				setPolylinePath([]);
 			}
 		};
 
 		getInitialTrack();
-	}, [selectedDevices]);
+	}, [selectedDevices, timeRange]);
+
+	useEffect(() => {
+		if (polylinePath.length) {
+			setIsTrackLoading(false);
+		}
+	}, [polylinePath]);
 
 	if (loadError) return <div>Error Loading Maps</div>;
 	if (!isLoaded) return <div>Loading Maps</div>;
 
 	const handleDeviceClick = async (device: IDevice) => {
-		const track = await getTrack({
-			jwt,
-			deviceIdList: device.deviceId,
-			startDateTime: getFormattedDate(timeRange.startDate),
-			endDateTime: getFormattedDate(timeRange.endDate),
-		});
-		setShowMapModal({
-			isShowing: true,
-			device,
-		});
-		setPolylinePath(track);
+		if (!isMapLoading && !isTrackLoading) {
+			setIsTrackLoading(true);
+
+			const track = await getTrack({
+				jwt,
+				deviceIdList: device.deviceId,
+				startDateTime: getFormattedDate(timeRange.startDate),
+				endDateTime: getFormattedDate(timeRange.endDate),
+			});
+			setShowMapModal({
+				isShowing: true,
+				device,
+			});
+			setPolylinePath(track);
+		} else {
+			setShowMapModal({ isShowing: false });
+			setPolylinePath([]);
+		}
 	};
 
 	const mapCenter = locations.length
@@ -111,10 +136,13 @@ export const GoogleMaps = () => {
 									mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
 								>
 									<Flex
+										position='relative'
 										flexDirection='column'
 										alignItems='center'
 										justifyContent='center'
 										minWidth='fit-content'
+										top='-24px'
+										left='-32px'
 									>
 										<Button
 											onClick={() => handleDeviceClick(location)}
