@@ -161,7 +161,7 @@ const TimePicker = () => {
 				</Flex>
 			) : (
 				<Flex justifyContent='flex-start' alignItems='center' marginTop='16px'>
-					<Box>
+					<Box zIndex={100}>
 						<Text color='brand.black' marginBottom='8px'>
 							From
 						</Text>

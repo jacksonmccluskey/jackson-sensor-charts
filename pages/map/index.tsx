@@ -40,7 +40,11 @@ export const Map = () => {
 						position='absolute'
 						top='16px'
 						right='16px'
-						onClick={() => setShowMapModal({ isShowing: false })}
+						onClick={() =>
+							setShowMapModal((prev) => {
+								return { isShowing: false, device: prev.device };
+							})
+						}
 						backgroundColor='transparent'
 						_hover={{
 							backgroundColor: 'transparent',

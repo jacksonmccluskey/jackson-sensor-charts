@@ -87,7 +87,7 @@ export default function Home() {
 		devices,
 	} = useDataContext();
 
-	const [currentTab, setCurrentTab] = useState<Tab | null>(null);
+	const [currentTab, setCurrentTab] = useState<Tab | null>('CHART');
 	const [fileFormat, setFileFormat] = useState<FileFormatKey>('html');
 	const [apiResponseFormat, setAPIResponseFormat] =
 		useState<APIResponseFormat>('SCREEN');

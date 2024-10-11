@@ -82,7 +82,6 @@ interface IOrganization {
 export interface IMapModal {
 	isShowing: boolean;
 	device?: IDevice;
-	track?: IGoogleLocation[];
 }
 
 interface IDataContext {
@@ -190,11 +189,17 @@ export const DataProvider = ({ children }) => {
 			setLocations(updatedDevices);
 		} else {
 			setLocations([]);
-			setShowMapModal({ isShowing: false });
+			setShowMapModal((prev) => {
+				return { isShowing: false, device: prev.device };
+			});
 		}
 	};
 
 	useEffect(() => {
+		setShowMapModal((prev) => {
+			return { isShowing: false, device: prev.device };
+		});
+
 		const updateSensorSets = async () => {
 			if (selectedDevices.length) {
 				setIsSensorsLoading(true);

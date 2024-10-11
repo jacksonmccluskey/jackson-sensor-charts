@@ -35,10 +35,14 @@ export const GoogleMaps = () => {
 	});
 	const [polylinePath, setPolylinePath] = useState<IGoogleLocation[]>([]);
 
-	const [mapCenter, setMapCenter] = useState<IGoogleLocation>({
-		lat: 0,
-		lng: 0,
-	});
+	const [mapCenter, setMapCenter] = useState<IGoogleLocation>(
+		locations[0] && locations[0].latitude && locations[0].longitude
+			? {
+					lat: locations[0].latitude,
+					lng: locations[0].longitude,
+			  }
+			: { lat: 0, lng: 0 }
+	);
 
 	const getMapCenter = () => {
 		setMapCenter((prev) =>
@@ -46,65 +50,69 @@ export const GoogleMaps = () => {
 			locations.length
 				? {
 						lat: showMapModal?.device?.latitude ?? locations[0].latitude ?? 0,
-						lng: showMapModal?.device?.latitude ?? locations[0].longitude ?? 0,
+						lng: showMapModal?.device?.longitude ?? locations[0].longitude ?? 0,
 				  }
 				: prev
 		);
 	};
 
+	useEffect(() => {}, []);
+
+	useEffect(() => {
+		if (
+			(showMapModal?.device?.latitude && showMapModal?.device?.longitude) ||
+			locations.length
+		) {
+			setMapCenter({
+				lat: showMapModal?.device?.latitude ?? locations[0].latitude ?? 0,
+				lng: showMapModal?.device?.longitude ?? locations[0].longitude ?? 0,
+			});
+		}
+	}, [showMapModal, locations]);
+
 	useEffect(() => {
 		const getInitialTrack = async () => {
-			if (selectedDevices.length) {
-				setIsTrackLoading(true);
-
-				const track = await getTrack({
-					jwt,
-					deviceIdList:
-						devices.find(
-							(device) =>
-								device.commId == selectedDevices[selectedDevices.length - 1]
-						).deviceId + '',
-					startDateTime: getFormattedDate(timeRange.startDate),
-					endDateTime: getFormattedDate(timeRange.endDate),
-				});
-				setPolylinePath(track);
-			} else {
+			try {
+				if (selectedDevices.length) {
+					const track = await getTrack({
+						jwt,
+						deviceIdList:
+							devices.find(
+								(device) =>
+									device.commId == selectedDevices[selectedDevices.length - 1]
+							).deviceId + '',
+						startDateTime: timeRange.startDate.toISOString(),
+						endDateTime: timeRange.endDate.toISOString(),
+					});
+					setPolylinePath(track);
+				} else {
+					setPolylinePath([]);
+				}
+			} catch {
 				setPolylinePath([]);
 			}
 		};
 
 		getInitialTrack();
-	}, [selectedDevices, timeRange]);
-
-	useEffect(() => {
-		if (polylinePath.length) {
-			setIsTrackLoading(false);
-		}
-	}, [polylinePath]);
+	}, [selectedDevices, timeRange, locations]);
 
 	if (loadError) return <div>Error Loading Maps</div>;
 	if (!isLoaded) return <div>Loading Maps</div>;
 
 	const handleDeviceClick = async (device: IDevice) => {
-		if (!isMapLoading && !isTrackLoading) {
-			getMapCenter();
-			setIsTrackLoading(true);
+		getMapCenter();
 
-			const track = await getTrack({
-				jwt,
-				deviceIdList: device.deviceId,
-				startDateTime: getFormattedDate(timeRange.startDate),
-				endDateTime: getFormattedDate(timeRange.endDate),
-			});
-			setShowMapModal({
-				isShowing: true,
-				device,
-			});
-			setPolylinePath(track);
-		} else {
-			setShowMapModal({ isShowing: false });
-			setPolylinePath([]);
-		}
+		const track = await getTrack({
+			jwt,
+			deviceIdList: device.deviceId,
+			startDateTime: getFormattedDate(timeRange.startDate),
+			endDateTime: getFormattedDate(timeRange.endDate),
+		});
+		setShowMapModal({
+			isShowing: true,
+			device,
+		});
+		setPolylinePath(track);
 	};
 
 	return (
@@ -158,7 +166,7 @@ export const GoogleMaps = () => {
 									>
 										<Button
 											onClick={() => {
-												if (!isMapLoading) handleDeviceClick(location);
+												handleDeviceClick(location);
 											}}
 											aria-label={location.deviceName}
 											backgroundColor='transparent'
@@ -168,16 +176,10 @@ export const GoogleMaps = () => {
 										>
 											{location.iconFileName ? (
 												<Image
-													src={(() => {
-														console.log(
-															config.localIconPath +
-																(location.iconFileName ?? 'buoy-icon.png')
-														);
-														return (
-															config.localIconPath +
-															(location.iconFileName ?? 'buoy-icon.png')
-														);
-													})()}
+													src={
+														config.localIconPath +
+														(location.iconFileName ?? 'buoy-icon.png')
+													}
 													width='24px'
 													height='24px'
 												/>
