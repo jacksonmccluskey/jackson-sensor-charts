@@ -129,6 +129,7 @@ export default function Home() {
 		orgId,
 		sensorSets,
 		selectedSensors,
+		coordinateFormat,
 	]);
 
 	const selectedButtonStyles = {

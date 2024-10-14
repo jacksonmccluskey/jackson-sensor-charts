@@ -262,7 +262,7 @@ export const DataProvider = ({ children }) => {
 
 	useEffect(() => {
 		getLatestLocations();
-	}, [selectedDevices, timeRange, track]);
+	}, [selectedDevices, timeRange]);
 
 	useEffect(() => {
 		if (sensorSets.length) {

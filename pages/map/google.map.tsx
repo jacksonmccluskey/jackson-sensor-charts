@@ -43,9 +43,8 @@ export const GoogleMaps = () => {
 						(device) =>
 							device.commId == selectedDevices[selectedDevices.length - 1]
 					);
-					if (deviceSelected) {
-						setShowMapModal({ isShowing: true, device: deviceSelected });
-					}
+
+					setShowMapModal({ isShowing: false });
 
 					const track = await getTrack({
 						jwt,
@@ -54,6 +53,10 @@ export const GoogleMaps = () => {
 						endDateTime: timeRange.endDate,
 					});
 					setTrack(track);
+					if (track.length) {
+						const { lat, lng } = track[0];
+						setMapCenter({ lat, lng });
+					}
 				} else {
 					setTrack([]);
 				}
@@ -63,7 +66,7 @@ export const GoogleMaps = () => {
 		};
 
 		getInitialTrack();
-	}, [selectedDevices, timeRange, locations]);
+	}, [selectedDevices, timeRange]);
 
 	if (loadError) return <div>Error Loading Maps</div>;
 	if (!isLoaded) return <div>Loading Maps</div>;

@@ -36,8 +36,8 @@ export const MapModal = ({
 		formattedLatitude: number | string;
 		formattedLongitude: number | string;
 	}>({
-		formattedLatitude: latitude,
-		formattedLongitude: longitude,
+		formattedLatitude: 'Latitude Loading...',
+		formattedLongitude: 'Longitude Loading...',
 	});
 
 	useEffect(() => {
@@ -48,7 +48,7 @@ export const MapModal = ({
 		});
 
 		setFormattedLocation(newFormattedLocation);
-	}, [coordinateFormat, latitude, longitude]);
+	}, [coordinateFormat]);
 
 	const batteryPercentage: number =
 		batteryVoltage && batteryVoltage > 0
@@ -105,10 +105,10 @@ export const MapModal = ({
 					width='100%'
 				>
 					<Text minWidth='fit-content'>
-						{formattedLocation?.formattedLatitude ?? 'Latitude Loading...'}
+						{formattedLocation?.formattedLatitude}
 					</Text>
 					<Text minWidth='fit-content' marginLeft='16px'>
-						{formattedLocation?.formattedLongitude ?? 'Longitude Loading...'}
+						{formattedLocation?.formattedLongitude}
 					</Text>
 				</Flex>
 				<Flex

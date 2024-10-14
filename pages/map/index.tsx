@@ -9,7 +9,10 @@ const GoogleMaps = dynamic(() => import('./google.map'), {
 });
 
 export const Map = () => {
-	const { showMapModal, setShowMapModal } = useDataContext();
+	const {
+		showMapModal: { isShowing, device },
+		setShowMapModal,
+	} = useDataContext();
 
 	return (
 		<Flex
@@ -19,7 +22,7 @@ export const Map = () => {
 			position='relative'
 		>
 			<GoogleMaps />
-			{showMapModal.isShowing && (
+			{isShowing && (
 				<Flex
 					position='absolute'
 					top='0'
@@ -47,17 +50,15 @@ export const Map = () => {
 						<Text color='brand.black'>X</Text>
 					</Button>
 					<MapModal
-						deviceTypeName={showMapModal.device.deviceTypeName}
-						deviceName={showMapModal.device.deviceName}
-						commId={showMapModal.device.commId}
-						dateTimeUTC={getFormattedDate(
-							new Date(showMapModal.device.lastTransmitDate)
-						)}
-						latitude={showMapModal.device.latitude}
-						longitude={showMapModal.device.longitude}
-						gpsQuality={showMapModal.device.gpsQuality}
-						temperature={showMapModal.device.temperature}
-						batteryVoltage={showMapModal.device.batteryVoltage}
+						deviceTypeName={device.deviceTypeName}
+						deviceName={device.deviceName}
+						commId={device.commId}
+						dateTimeUTC={getFormattedDate(new Date(device.lastTransmitDate))}
+						latitude={device.latitude}
+						longitude={device.longitude}
+						gpsQuality={device.gpsQuality}
+						temperature={device.temperature}
+						batteryVoltage={device.batteryVoltage}
 					/>
 				</Flex>
 			)}
