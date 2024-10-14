@@ -1,11 +1,12 @@
 import { config } from '../config';
 import { IGoogleLocation } from '../context/data/data.context';
+import { getFormattedDate } from '../helpers/get-formatted-date';
 
 export interface IGetTrack {
 	jwt?: string;
 	deviceIdList: number | string;
-	startDateTime: string;
-	endDateTime: string;
+	startDateTime: Date;
+	endDateTime: Date;
 }
 
 export const getTrack = async ({
@@ -20,8 +21,8 @@ export const getTrack = async ({
 			{
 				body: JSON.stringify({
 					deviceIdList: deviceIdList + '',
-					startDateTime,
-					endDateTime,
+					startDateTime: getFormattedDate(startDateTime),
+					endDateTime: getFormattedDate(endDateTime),
 				}),
 				method: 'POST',
 				headers: {

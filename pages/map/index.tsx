@@ -2,19 +2,14 @@ import { Button, Flex, Text } from '@chakra-ui/react';
 import dynamic from 'next/dynamic';
 import { useDataContext } from '../../context/data/data.context';
 import { MapModal } from './modal.map';
-import LoadingSkeleton from '../../components/modals/loading-skeleton.modal';
+import { getFormattedDate } from '../../helpers/get-formatted-date';
 
 const GoogleMaps = dynamic(() => import('./google.map'), {
 	ssr: false,
 });
 
 export const Map = () => {
-	const {
-		showMapModal: { isShowing, device },
-		setShowMapModal,
-		isTrackLoading,
-		isMapLoading,
-	} = useDataContext();
+	const { showMapModal, setShowMapModal } = useDataContext();
 
 	return (
 		<Flex
@@ -24,7 +19,7 @@ export const Map = () => {
 			position='relative'
 		>
 			<GoogleMaps />
-			{isShowing && (
+			{showMapModal.isShowing && (
 				<Flex
 					position='absolute'
 					top='0'
@@ -40,11 +35,7 @@ export const Map = () => {
 						position='absolute'
 						top='16px'
 						right='16px'
-						onClick={() =>
-							setShowMapModal((prev) => {
-								return { isShowing: false, device: prev.device };
-							})
-						}
+						onClick={() => setShowMapModal({ isShowing: false })}
 						backgroundColor='transparent'
 						_hover={{
 							backgroundColor: 'transparent',
@@ -56,15 +47,17 @@ export const Map = () => {
 						<Text color='brand.black'>X</Text>
 					</Button>
 					<MapModal
-						deviceTypeName={device.deviceTypeName}
-						deviceName={device.deviceName}
-						commId={device.commId}
-						dateTimeUTC={device.lastTransmitDate}
-						latitude={device.latitude}
-						longitude={device.longitude}
-						gpsQuality={device.gpsQuality}
-						temperature={device.temperature}
-						batteryVoltage={device.batteryVoltage}
+						deviceTypeName={showMapModal.device.deviceTypeName}
+						deviceName={showMapModal.device.deviceName}
+						commId={showMapModal.device.commId}
+						dateTimeUTC={getFormattedDate(
+							new Date(showMapModal.device.lastTransmitDate)
+						)}
+						latitude={showMapModal.device.latitude}
+						longitude={showMapModal.device.longitude}
+						gpsQuality={showMapModal.device.gpsQuality}
+						temperature={showMapModal.device.temperature}
+						batteryVoltage={showMapModal.device.batteryVoltage}
 					/>
 				</Flex>
 			)}

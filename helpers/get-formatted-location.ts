@@ -41,40 +41,42 @@ export const getFormattedLocation = ({
 	latitude,
 	longitude,
 }: IGetFormattedLocation): IFormattedLocation => {
-	switch (coordinateFormat) {
-		case 'D': {
-			return {
-				formattedLatitude: `${latitude.toFixed(6)}° ${
-					latitude >= 0 ? 'N' : 'S'
-				}`,
-				formattedLongitude: `${latitude.toFixed(6)}° ${
-					longitude >= 0 ? 'E' : 'W'
-				}`,
-			};
-		}
-		case 'DM': {
-			const latitudeDM = convertToDM(latitude);
-			const longitudeDM = convertToDM(latitude);
-			return {
-				formattedLatitude: `${latitudeDM.degrees}° ${latitudeDM.minutes.toFixed(
-					3
-				)}' ${latitudeDM.direction}`,
-				formattedLongitude: `${
-					longitudeDM.degrees
-				}° ${longitudeDM.minutes.toFixed(3)}' ${longitudeDM.direction}`,
-			};
-		}
-		case 'DMS': {
-			const latitudeDMS = convertToDMS(latitude);
-			const longitudeDMS = convertToDMS(longitude);
-			return {
-				formattedLatitude: `${latitudeDMS.degrees}° ${
-					latitudeDMS.minutes
-				}' ${latitudeDMS.seconds.toFixed(2)}" ${latitudeDMS.direction}`,
-				formattedLongitude: `${longitudeDMS.degrees}° ${
-					longitudeDMS.minutes
-				}' ${longitudeDMS.seconds.toFixed(2)}" ${longitudeDMS.direction}`,
-			};
+	if (latitude !== undefined && longitude !== undefined) {
+		switch (coordinateFormat) {
+			case 'D': {
+				return {
+					formattedLatitude: `${latitude.toFixed(6)}° ${
+						latitude >= 0 ? 'N' : 'S'
+					}`,
+					formattedLongitude: `${latitude.toFixed(6)}° ${
+						longitude >= 0 ? 'E' : 'W'
+					}`,
+				};
+			}
+			case 'DM': {
+				const latitudeDM = convertToDM(latitude);
+				const longitudeDM = convertToDM(latitude);
+				return {
+					formattedLatitude: `${
+						latitudeDM.degrees
+					}° ${latitudeDM.minutes.toFixed(3)}' ${latitudeDM.direction}`,
+					formattedLongitude: `${
+						longitudeDM.degrees
+					}° ${longitudeDM.minutes.toFixed(3)}' ${longitudeDM.direction}`,
+				};
+			}
+			case 'DMS': {
+				const latitudeDMS = convertToDMS(latitude);
+				const longitudeDMS = convertToDMS(longitude);
+				return {
+					formattedLatitude: `${latitudeDMS.degrees}° ${
+						latitudeDMS.minutes
+					}' ${latitudeDMS.seconds.toFixed(2)}" ${latitudeDMS.direction}`,
+					formattedLongitude: `${longitudeDMS.degrees}° ${
+						longitudeDMS.minutes
+					}' ${longitudeDMS.seconds.toFixed(2)}" ${longitudeDMS.direction}`,
+				};
+			}
 		}
 	}
 };

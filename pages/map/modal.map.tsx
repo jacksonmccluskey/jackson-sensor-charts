@@ -105,10 +105,10 @@ export const MapModal = ({
 					width='100%'
 				>
 					<Text minWidth='fit-content'>
-						{formattedLocation.formattedLatitude}
+						{formattedLocation?.formattedLatitude ?? 'Latitude Loading...'}
 					</Text>
 					<Text minWidth='fit-content' marginLeft='16px'>
-						{formattedLocation.formattedLongitude}
+						{formattedLocation?.formattedLongitude ?? 'Longitude Loading...'}
 					</Text>
 				</Flex>
 				<Flex

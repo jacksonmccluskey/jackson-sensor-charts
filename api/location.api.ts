@@ -1,5 +1,6 @@
 import { config } from '../config';
 import { IDevice, ITimeRange } from '../context/data/data.context';
+import { getFormattedDate } from '../helpers/get-formatted-date';
 
 export const getLocations = async ({
 	deviceIdList,
@@ -18,8 +19,8 @@ export const getLocations = async ({
 			{
 				body: JSON.stringify({
 					deviceIdList: deviceIdList.join(','),
-					startDateTime: timeRange.startDate,
-					endDateTime: timeRange.endDate,
+					startDateTime: getFormattedDate(timeRange.startDate),
+					endDateTime: getFormattedDate(timeRange.endDate),
 				}),
 				method: 'POST',
 				headers: {
@@ -43,6 +44,7 @@ export const getLocations = async ({
 						deviceTypeName: location.deviceTypeName,
 						batteryVoltage: location.battVoltage,
 						gpsQuality: location.gpsQuality,
+						lastTransmitDate: location.deviceDateTime,
 					};
 			  })
 			: [];

@@ -91,7 +91,7 @@ export const fetchDevices = async ({
 						longitude: device.longitude,
 						gpsQuality: device.gpsQuality,
 						deviceTypeName: device.deviceTypeName,
-						iconFileName: device.iconFileName,
+						iconFileName: device.deviceIconFileName,
 					};
 			  })
 			: ([] as IDevice[]);

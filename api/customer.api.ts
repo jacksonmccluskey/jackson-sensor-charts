@@ -8,6 +8,7 @@ export const getCustomerQueryString = ({
 	selectedDevices,
 	orgId,
 	selectedSensors,
+	coordinateFormat,
 }) => {
 	const time = constructTime(timeRange.startDate, timeRange.endDate);
 
@@ -15,7 +16,11 @@ export const getCustomerQueryString = ({
 		','
 	)}&${time}&fileFormat=${fileFormat}&fieldList=${selectedSensors
 		.map((selectedSensor) => selectedSensor.displayName)
-		.join(',')}&orgId=${orgId}`;
+		.join(',')}&orgId=${orgId}${
+		coordinateFormat
+			? '&coordinateFormat=' + coordinateFormat.toLowerCase()
+			: ''
+	}`;
 };
 
 export const getCustomerAPIURL = ({
@@ -25,6 +30,7 @@ export const getCustomerAPIURL = ({
 	selectedDevices,
 	orgId,
 	selectedSensors,
+	coordinateFormat,
 }) => {
 	return (
 		config.customerAPIURL +
@@ -35,6 +41,7 @@ export const getCustomerAPIURL = ({
 			selectedDevices,
 			orgId,
 			selectedSensors,
+			coordinateFormat,
 		})
 	);
 };

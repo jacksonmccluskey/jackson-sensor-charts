@@ -9,6 +9,7 @@ import {
 	Radio,
 	Link,
 	IconButton,
+	Stack,
 } from '@chakra-ui/react';
 import { CopyIcon } from '@chakra-ui/icons';
 import TimePicker from '../components/pickers/time-picker';
@@ -24,6 +25,7 @@ import {
 } from '../context/data/data.context';
 import { useAuthContext } from '../context/auth/auth.context';
 import { getData } from '../api/data.api';
+import { CoordinateFormat } from '../helpers/get-formatted-location';
 
 type Tab = 'CHART' | 'MAP' | 'API';
 type FileFormatKey =
@@ -93,6 +95,8 @@ export default function Home() {
 		useState<APIResponseFormat>('SCREEN');
 	const [compressionValue, setCompressionValue] =
 		useState<CompressionValue>('NONE');
+	const [coordinateFormat, setCoordinateFormat] =
+		useState<CoordinateFormat>('D');
 	const [customerAPIURL, setCustomerAPIURL] = useState<string>(
 		getCustomerAPIURL({
 			fileFormat,
@@ -101,6 +105,7 @@ export default function Home() {
 			selectedDevices,
 			orgId,
 			selectedSensors,
+			coordinateFormat,
 		})
 	);
 
@@ -113,6 +118,7 @@ export default function Home() {
 				selectedDevices,
 				orgId,
 				selectedSensors,
+				coordinateFormat,
 			})
 		);
 	}, [
@@ -364,70 +370,121 @@ export default function Home() {
 						})}
 					{currentTab == 'MAP' && <Map />}
 					{currentTab == 'API' && [
-						<Select
-							value={fileFormat}
-							onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-								setFileFormat(e.target.value as FileFormatKey)
-							}
-							color='brand.black'
-							borderWidth='1px'
-							borderColor='brand.black'
-							width='fit-content'
-							backgroundColor='brand.white'
-							key='file-format'
-						>
-							{Object.keys(fileFormatValue).map((key) => (
-								<option key={key} value={key} color='brand.black'>
-									{fileFormatValue[key as FileFormatKey]}
-								</option>
-							))}
-						</Select>,
-						<RadioGroup
-							onChange={(value: APIResponseFormat) =>
-								setAPIResponseFormat(value)
-							}
-							value={apiResponseFormat}
-							flexDirection='row'
-							minWidth='100%'
-							marginTop='16px'
-							key='api-response-format'
-						>
-							{Object.keys(apiResponseFormatValues).map((key) => (
-								<Radio
-									value={key}
-									borderWidth='2px'
-									borderColor='brand.black'
-									marginRight='16px'
-									marginTop='16px'
-									key={key}
-								>
-									<Text fontSize='md' color='brand.black'>
-										{apiResponseFormatValues[key]}
-									</Text>
-								</Radio>
-							))}
-						</RadioGroup>,
-						apiResponseFormat == 'DOWNLOAD' && (
+						<Flex flexDirection='row' alignItems='center' marginTop='16px'>
+							<Text
+								fontWeight='bold'
+								color='brand.black'
+								minWidth='fit-content'
+							>
+								Data Format
+							</Text>
 							<Select
-								value={compressionValue}
+								value={fileFormat}
 								onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-									setCompressionValue(e.target.value as CompressionValue)
+									setFileFormat(e.target.value as FileFormatKey)
 								}
 								color='brand.black'
 								borderWidth='1px'
 								borderColor='brand.black'
 								width='fit-content'
 								backgroundColor='brand.white'
-								marginTop='32px'
-								key='compression-value'
+								key='file-format'
+								marginLeft='16px'
 							>
-								{Object.keys(compressionValues).map((key) => (
+								{Object.keys(fileFormatValue).map((key) => (
 									<option key={key} value={key} color='brand.black'>
-										{compressionValues[key as CompressionValue]}
+										{fileFormatValue[key as FileFormatKey]}
 									</option>
 								))}
 							</Select>
+						</Flex>,
+						<Flex flexDirection='row' alignItems='center' marginTop='24px'>
+							<Text
+								fontWeight='bold'
+								color='brand.black'
+								minWidth='fit-content'
+							>
+								Response
+							</Text>
+							<RadioGroup
+								onChange={(value: APIResponseFormat) =>
+									setAPIResponseFormat(value)
+								}
+								value={apiResponseFormat}
+								flexDirection='row'
+								minWidth='100%'
+								key='api-response-format'
+								marginLeft='16px'
+							>
+								{Object.keys(apiResponseFormatValues).map((key) => (
+									<Radio
+										value={key}
+										borderWidth='2px'
+										borderColor='brand.black'
+										marginRight='16px'
+										key={key}
+									>
+										<Text fontSize='md' color='brand.black'>
+											{apiResponseFormatValues[key]}
+										</Text>
+									</Radio>
+								))}
+							</RadioGroup>
+						</Flex>,
+						apiResponseFormat == 'DOWNLOAD' && (
+							<Flex marginTop='24px' flexDirection='row' alignItems='center'>
+								<Text fontWeight='bold' color='brand.black'>
+									File Compression
+								</Text>
+								<Select
+									value={compressionValue}
+									onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+										setCompressionValue(e.target.value as CompressionValue)
+									}
+									color='brand.black'
+									borderWidth='1px'
+									borderColor='brand.black'
+									width='fit-content'
+									backgroundColor='brand.white'
+									key='compression-value'
+									marginLeft='16px'
+								>
+									{Object.keys(compressionValues).map((key) => (
+										<option key={key} value={key} color='brand.black'>
+											{compressionValues[key as CompressionValue]}
+										</option>
+									))}
+								</Select>
+							</Flex>
 						),
+						<Flex marginTop='24px' flexDirection='row' alignItems='center'>
+							<Text fontWeight='bold' color='brand.black'>
+								Coordinate Format
+							</Text>
+							<RadioGroup
+								onChange={(value: CoordinateFormat) =>
+									setCoordinateFormat(value)
+								}
+								value={coordinateFormat}
+								marginLeft='16px'
+							>
+								<Stack direction='row'>
+									<Radio borderColor='brand.black' value='D'>
+										<Text color='brand.black'>D</Text>
+									</Radio>
+									<Radio borderColor='brand.black' value='DM' marginLeft='16px'>
+										<Text color='brand.black'>DM</Text>
+									</Radio>
+									<Radio
+										borderColor='brand.black'
+										value='DMS'
+										marginLeft='16px'
+									>
+										<Text color='brand.black'>DMS</Text>
+									</Radio>
+								</Stack>
+							</RadioGroup>
+						</Flex>,
 						<Flex
 							flexDirection='row'
 							justifyContent='flex-start'

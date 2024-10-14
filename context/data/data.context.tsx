@@ -21,6 +21,11 @@ export interface ILocation {
 	longitude: number;
 }
 
+export interface ITrack {
+	location: ILocation;
+	time: string;
+}
+
 export interface IGoogleLocation {
 	lat: number;
 	lng: number;
@@ -103,6 +108,8 @@ interface IDataContext {
 	setShowMapModal?: React.Dispatch<React.SetStateAction<IMapModal>>;
 	locations?: IDevice[];
 	setLocations?: React.Dispatch<React.SetStateAction<IDevice[]>>;
+	track?: IGoogleLocation[];
+	setTrack?: React.Dispatch<React.SetStateAction<IGoogleLocation[]>>;
 	isDevicesLoading?: boolean;
 	setIsDevicesLoading?: React.Dispatch<React.SetStateAction<boolean>>;
 	isSensorsLoading?: boolean;
@@ -144,6 +151,8 @@ export const DataProvider = ({ children }) => {
 	});
 
 	const [locations, setLocations] = useState<IDevice[]>([]);
+
+	const [track, setTrack] = useState<IGoogleLocation[]>([]);
 
 	const [isDevicesLoading, setIsDevicesLoading] = useState<boolean>(false);
 	const [isSensorsLoading, setIsSensorsLoading] = useState<boolean>(false);
@@ -189,17 +198,10 @@ export const DataProvider = ({ children }) => {
 			setLocations(updatedDevices);
 		} else {
 			setLocations([]);
-			setShowMapModal((prev) => {
-				return { isShowing: false, device: prev.device };
-			});
 		}
 	};
 
 	useEffect(() => {
-		setShowMapModal((prev) => {
-			return { isShowing: false, device: prev.device };
-		});
-
 		const updateSensorSets = async () => {
 			if (selectedDevices.length) {
 				setIsSensorsLoading(true);
@@ -260,7 +262,7 @@ export const DataProvider = ({ children }) => {
 
 	useEffect(() => {
 		getLatestLocations();
-	}, [selectedDevices, timeRange]);
+	}, [selectedDevices, timeRange, track]);
 
 	useEffect(() => {
 		if (sensorSets.length) {
@@ -366,6 +368,8 @@ export const DataProvider = ({ children }) => {
 				setSensorDataSets,
 				locations,
 				setLocations,
+				track,
+				setTrack,
 				showMapModal,
 				setShowMapModal,
 				isDevicesLoading,

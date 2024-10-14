@@ -215,26 +215,6 @@ const TimePicker = () => {
 					</Box>
 				</Flex>
 			)}
-			<Box marginTop='16px'>
-				<Text color='brand.black'>Coordinate Format</Text>
-				<RadioGroup
-					onChange={(value: CoordinateFormat) => setCoordinateFormat(value)}
-					value={coordinateFormat}
-					marginTop='8px'
-				>
-					<Stack direction='row' spacing='16px'>
-						<Radio borderColor='brand.black' value='D'>
-							<Text color='brand.black'>D</Text>
-						</Radio>
-						<Radio borderColor='brand.black' value='DM'>
-							<Text color='brand.black'>DM</Text>
-						</Radio>
-						<Radio borderColor='brand.black' value='DMS'>
-							<Text color='brand.black'>DMS</Text>
-						</Radio>
-					</Stack>
-				</RadioGroup>
-			</Box>
 		</Box>
 	);
 };

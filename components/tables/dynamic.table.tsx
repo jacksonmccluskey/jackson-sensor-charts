@@ -11,7 +11,6 @@ import {
 	Icon,
 } from '@chakra-ui/react';
 import { ChevronUpIcon, ChevronDownIcon } from '@chakra-ui/icons';
-import TableHelperModal from '../modals/table-helper.modal';
 
 const DynamicTable = ({
 	columnsConfig,
@@ -49,12 +48,16 @@ const DynamicTable = ({
 			overflow='auto'
 			{...styles}
 		>
-			<Table size='sm' width='100%' backgroundColor='brand.white'>
+			<Table
+				size='sm'
+				width='100%'
+				backgroundColor={showHelperModal ? 'brand.3' : 'white'}
+			>
 				<Thead
 					position='sticky'
 					top={0}
-					backgroundColor='brand.white'
 					zIndex={1}
+					backgroundColor='brand.white'
 				>
 					<Tr>
 						<Th maxWidth='fit-content'>
@@ -64,6 +67,7 @@ const DynamicTable = ({
 								name='question'
 								width='16px'
 								height='16px'
+								borderRadius='8px'
 								backgroundColor='brand.white'
 							/>
 						</Th>
@@ -132,14 +136,21 @@ const DynamicTable = ({
 					))}
 				</Tbody>
 			</Table>
-			<TableHelperModal
-				showHelperModal={showHelperModal}
-				styles={{
-					position: 'fixed',
-					top: mousePosition.y + 16,
-					left: mousePosition.x + 16,
-				}}
-			/>
+			{showHelperModal ? (
+				<video
+					autoPlay={true}
+					style={{
+						position: 'fixed',
+						top: mousePosition.y + 16,
+						left: mousePosition.x + 16,
+						borderWidth: '4px',
+						borderColor: 'black',
+						borderRadius: '8px',
+					}}
+				>
+					<source src='/table-helper-modal.mp4' type='video/mp4' />
+				</video>
+			) : null}
 		</Flex>
 	);
 };
