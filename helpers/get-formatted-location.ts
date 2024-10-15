@@ -79,4 +79,9 @@ export const getFormattedLocation = ({
 			}
 		}
 	}
+
+	return {
+		formattedLatitude: 'Unknown Latitude',
+		formattedLongitude: 'Unknown Longitude',
+	};
 };

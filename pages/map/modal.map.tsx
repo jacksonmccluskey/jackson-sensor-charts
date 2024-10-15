@@ -3,7 +3,10 @@ import buoyBase64 from '../../components/base64/buoy';
 import { useEffect, useState } from 'react';
 import BatteryGauge from 'react-battery-gauge';
 import Gauge from '../../components/charts/gauge.chart';
-import { getFormattedLocation } from '../../helpers/get-formatted-location';
+import {
+	IFormattedLocation,
+	getFormattedLocation,
+} from '../../helpers/get-formatted-location';
 
 export interface IMapModal {
 	deviceTypeName: string;
@@ -32,13 +35,10 @@ export const MapModal = ({
 	const [coordinateFormat, setCoordinateFormat] =
 		useState<CoordinateFormat>('D');
 
-	const [formattedLocation, setFormattedLocation] = useState<{
-		formattedLatitude: number | string;
-		formattedLongitude: number | string;
-	}>({
-		formattedLatitude: 'Latitude Loading...',
-		formattedLongitude: 'Longitude Loading...',
-	});
+	const [formattedLocation, setFormattedLocation] =
+		useState<IFormattedLocation>(
+			getFormattedLocation({ coordinateFormat, latitude, longitude })
+		);
 
 	useEffect(() => {
 		const newFormattedLocation = getFormattedLocation({
@@ -48,7 +48,7 @@ export const MapModal = ({
 		});
 
 		setFormattedLocation(newFormattedLocation);
-	}, [coordinateFormat]);
+	}, [coordinateFormat, latitude, longitude]);
 
 	const batteryPercentage: number =
 		batteryVoltage && batteryVoltage > 0
