@@ -27,7 +27,7 @@ export const Map = () => {
 					position='absolute'
 					top='0'
 					left='0'
-					backgroundColor='rgba(255, 255, 255, 1)'
+					backgroundColor='rgba(255, 255, 255, 0.5)'
 					width='100%'
 					height='360px'
 					justifyContent='center'
