@@ -59,6 +59,7 @@ export const Map = () => {
 						gpsQuality={device.gpsQuality}
 						temperature={device.temperature}
 						batteryVoltage={device.batteryVoltage}
+						iconFileName={device.iconFileName}
 					/>
 				</Flex>
 			)}

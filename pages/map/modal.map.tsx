@@ -7,6 +7,7 @@ import {
 	IFormattedLocation,
 	getFormattedLocation,
 } from '../../helpers/get-formatted-location';
+import { config } from '../../config';
 
 export interface IMapModal {
 	deviceTypeName: string;
@@ -18,6 +19,7 @@ export interface IMapModal {
 	gpsQuality: number;
 	temperature: number;
 	batteryVoltage: number;
+	iconFileName: string;
 }
 
 export const MapModal = ({
@@ -30,6 +32,7 @@ export const MapModal = ({
 	gpsQuality,
 	temperature,
 	batteryVoltage,
+	iconFileName,
 }: IMapModal) => {
 	type CoordinateFormat = 'D' | 'DM' | 'DMS';
 	const [coordinateFormat, setCoordinateFormat] =
@@ -74,7 +77,11 @@ export const MapModal = ({
 					justifyContent='space-between'
 					alignItems='center'
 				>
-					<Image src={buoyBase64} width='32px' height='32px' />
+					<Image
+						src={config.localIconPath + (iconFileName ?? 'buoy-icon.png')}
+						width='24px'
+						height='24px'
+					/>
 					<Flex
 						flexDirection='column'
 						justifyContent='center'
