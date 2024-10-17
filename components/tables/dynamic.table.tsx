@@ -9,10 +9,18 @@ import {
 	Td,
 	Checkbox,
 	Icon,
+	IconButton,
 } from '@chakra-ui/react';
 import { ChevronUpIcon, ChevronDownIcon } from '@chakra-ui/icons';
+import { FaFilter } from 'react-icons/fa';
+import { useEffect } from 'react';
 
-const DynamicTable = ({
+export interface ISearchFilter {
+	isShowing: boolean;
+	col?: any;
+}
+
+export const DynamicTable = ({
 	columnsConfig,
 	data,
 	selectedRows = [],
@@ -28,6 +36,14 @@ const DynamicTable = ({
 	};
 
 	const [showHelperModal, setShowHelperModal] = useState(false);
+
+	const [searchFilter, setSearchFilter] = useState<ISearchFilter>({
+		isShowing: false,
+	});
+
+	useEffect(() => {
+		console.log(searchFilter.col?.accessor);
+	}, [searchFilter]);
 
 	const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
@@ -89,6 +105,24 @@ const DynamicTable = ({
 									) : (
 										<ChevronDownIcon ml={2} />
 									))}
+								{
+									<IconButton
+										aria-label='Search Filter'
+										as={FaFilter}
+										maxHeight='12px'
+										maxWidth='12px'
+										backgroundColor='transparent'
+										color='brand.5'
+										_hover={{
+											color: 'brand.3',
+											backgroundColor: 'transparent',
+										}}
+										onClick={(e) => {
+											e.stopPropagation();
+											setSearchFilter({ isShowing: true, col });
+										}}
+									/>
+								}
 							</Th>
 						))}
 					</Tr>

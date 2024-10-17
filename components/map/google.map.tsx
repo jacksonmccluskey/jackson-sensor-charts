@@ -95,8 +95,6 @@ export const GoogleMaps = () => {
 				disableDefaultUI: true,
 				tilt: 45,
 				mapId: config.googleMapsAPIKey,
-				fullscreenControl: true,
-				mapTypeControl: true,
 			}}
 		>
 			{track?.length > 1 && (

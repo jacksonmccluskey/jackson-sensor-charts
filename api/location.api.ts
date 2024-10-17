@@ -14,14 +14,22 @@ export const getLocations = async ({
 	devices: IDevice[];
 }): Promise<IDevice[]> => {
 	try {
+		const filters: any = {
+			deviceIdList: deviceIdList.join(','),
+		};
+
+		if (timeRange.startDate) {
+			filters.startDateTime = getFormattedDate(timeRange.startDate);
+		}
+
+		if (timeRange.endDate) {
+			filters.endDateTime = getFormattedDate(timeRange.endDate);
+		}
+
 		const locationResponse = await fetch(
 			config.internalAPIURL + config.locationEndpoint,
 			{
-				body: JSON.stringify({
-					deviceIdList: deviceIdList.join(','),
-					startDateTime: getFormattedDate(timeRange.startDate),
-					endDateTime: getFormattedDate(timeRange.endDate),
-				}),
+				body: JSON.stringify(filters),
 				method: 'POST',
 				headers: {
 					Authorization: jwt ?? config.jwtTester,

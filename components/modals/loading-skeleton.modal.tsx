@@ -13,7 +13,7 @@ const shimmerAnimation = keyframes`
   100% { transform: translateX(150%); opacity: 0.3; }
 `;
 
-const WaveLoadingSkeleton = ({ children, isLoading, style = {} }) => {
+const LoadingSkeleton = ({ children, isLoading, style = {} }) => {
 	return (
 		<Box
 			position='relative'
@@ -58,4 +58,4 @@ const WaveLoadingSkeleton = ({ children, isLoading, style = {} }) => {
 	);
 };
 
-export default WaveLoadingSkeleton;
+export default LoadingSkeleton;

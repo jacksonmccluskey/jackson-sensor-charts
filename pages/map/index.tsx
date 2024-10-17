@@ -4,7 +4,7 @@ import { useDataContext } from '../../context/data/data.context';
 import { MapModal } from './modal.map';
 import { getFormattedDate } from '../../helpers/get-formatted-date';
 
-const GoogleMaps = dynamic(() => import('./google.map'), {
+const GoogleMaps = dynamic(() => import('../../components/map/google.map'), {
 	ssr: false,
 });
 
@@ -15,12 +15,7 @@ export const Map = () => {
 	} = useDataContext();
 
 	return (
-		<Flex
-			flexDirection='column'
-			height='100vh'
-			width='100%'
-			position='relative'
-		>
+		<Flex flexDirection='column' height='100%' width='100%' position='relative'>
 			<GoogleMaps />
 			{isShowing && (
 				<Flex
