@@ -75,10 +75,17 @@ const getBatteryVoltage = (batteryVoltage: number) => {
 
 const DeviceTable = ({ isOnlyActive = false }) => {
 	const columnsConfig = [
-		{ label: 'Device Name', accessor: 'deviceName' },
-		{ label: 'Comm ID', accessor: 'commId' },
-		{ label: 'Last Transmit (Date)', accessor: 'lastTransmitDate' },
-		{ label: 'Last Transmit (Ago)', accessor: 'lastTransmitAgo' },
+		{ label: 'Device Name', accessor: 'deviceName', filterable: true },
+		{ label: 'Comm ID', accessor: 'commId', filterable: true },
+		{
+			label: 'Last Transmit (Date)',
+			accessor: 'lastTransmitDate',
+			filterable: true,
+		},
+		{
+			label: 'Last Transmit (Ago)',
+			accessor: 'lastTransmitAgo',
+		},
 		{ label: 'Status', accessor: 'status' },
 		{ label: 'Battery Voltage', accessor: 'batteryVoltage' },
 		{ label: 'WMO ID', accessor: 'wmoId' },
@@ -91,10 +98,6 @@ const DeviceTable = ({ isOnlyActive = false }) => {
 		setSelectedDevices(devices.map((device) => device.commId));
 	}, []);
 
-	const [selectedColumns, setSelectedColumns] = useState(
-		columnsConfig.map((col) => col.accessor)
-	);
-	const [searchFilter, setSearchFilter] = useState<string>('');
 	const [sortOrder, setSortOrder] = useState({
 		column: 'lastTransmitDate',
 		ascending: false,
@@ -111,13 +114,7 @@ const DeviceTable = ({ isOnlyActive = false }) => {
 				batteryVoltage: getBatteryVoltage(device.batteryVoltage),
 			};
 		})
-		.filter(
-			(row) =>
-				selectedColumns.some((col) =>
-					String(row[col]).toLowerCase().includes(searchFilter.toLowerCase())
-				) && (isOnlyActive ? row.active : true)
-		)
-
+		.filter((row) => !isOnlyActive || row.active)
 		.sort((a, b) => {
 			if (!sortOrder.column) return 0;
 

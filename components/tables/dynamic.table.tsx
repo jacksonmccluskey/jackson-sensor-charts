@@ -14,10 +14,11 @@ import {
 import { ChevronUpIcon, ChevronDownIcon } from '@chakra-ui/icons';
 import { FaFilter } from 'react-icons/fa';
 import { useEffect } from 'react';
+import SearchFilterModal from '../modals/search-filter.modal';
 
 export interface ISearchFilter {
-	isShowing: boolean;
 	col?: any;
+	value?: string;
 }
 
 export const DynamicTable = ({
@@ -37,13 +38,35 @@ export const DynamicTable = ({
 
 	const [showHelperModal, setShowHelperModal] = useState(false);
 
+	const [filteredData, setFilteredData] = useState([]);
+
+	const [isSearchFilterInputShowing, setIsSearchFilterInputShowing] =
+		useState(false);
+
 	const [searchFilter, setSearchFilter] = useState<ISearchFilter>({
-		isShowing: false,
+		value: '',
 	});
 
 	useEffect(() => {
-		console.log(searchFilter.col?.accessor);
-	}, [searchFilter]);
+		console.log(`useEffect searchFilter... data = ${data}`);
+		if (searchFilter.value?.length && searchFilter.col?.accessor) {
+			console.log(
+				`searchFilter.value = ${searchFilter.value} && searchFilter.col.accessor: ${searchFilter.col.accessor}`
+			);
+			const dataWithFilter = data.filter((dataPoint) =>
+				dataPoint[searchFilter.col.accessor].includes(searchFilter.value)
+			);
+			setFilteredData(dataWithFilter);
+		} else {
+			setFilteredData(data);
+		}
+	}, [data, searchFilter]);
+
+	useEffect(() => {
+		if (filteredData.length) {
+			console.log(filteredData);
+		}
+	}, [filteredData]);
 
 	const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
@@ -96,6 +119,7 @@ export const DynamicTable = ({
 								cursor='pointer'
 								whiteSpace='nowrap'
 								color='brand.black'
+								padding='16px'
 							>
 								{col.label}
 								{sortOrder &&
@@ -105,7 +129,7 @@ export const DynamicTable = ({
 									) : (
 										<ChevronDownIcon ml={2} />
 									))}
-								{
+								{col.filterable ? (
 									<IconButton
 										aria-label='Search Filter'
 										as={FaFilter}
@@ -119,16 +143,30 @@ export const DynamicTable = ({
 										}}
 										onClick={(e) => {
 											e.stopPropagation();
-											setSearchFilter({ isShowing: true, col });
+											setSearchFilter((prev) => {
+												return { value: prev.value, col };
+											});
+											setIsSearchFilterInputShowing(true);
 										}}
 									/>
-								}
+								) : null}
+								{isSearchFilterInputShowing &&
+								searchFilter.col?.accessor == col.accessor ? (
+									<SearchFilterModal
+										setIsShowing={setIsSearchFilterInputShowing}
+										inputValue={searchFilter.value}
+										setSearchFilter={setSearchFilter}
+										styles={{
+											marginTop: '16px',
+										}}
+									/>
+								) : null}
 							</Th>
 						))}
 					</Tr>
 				</Thead>
 				<Tbody overflowY='auto' maxHeight='100%'>
-					{data.map((row, index) => (
+					{filteredData.map((row, index) => (
 						<Tr
 							key={row.id + index}
 							cursor='pointer'
